@@ -98,6 +98,7 @@ export class AsciiEffectImpl extends Effect {
         ["glitchFrequency", new Uniform(0)],
         ["brightnessAdjust", new Uniform(0)],
         ["contrastAdjust", new Uniform(1)],
+        ["ditherAmount", new Uniform(0)],
       ]),
     })
 
@@ -190,6 +191,7 @@ export class AsciiEffectImpl extends Effect {
       if (fx.glitchFrequency !== undefined) this.set("glitchFrequency", fx.glitchFrequency)
       if (fx.brightnessAdjust !== undefined) this.set("brightnessAdjust", fx.brightnessAdjust)
       if (fx.contrastAdjust !== undefined) this.set("contrastAdjust", fx.contrastAdjust)
+      if (fx.dither !== undefined) this.set("ditherAmount", fx.dither)
     }
   }
 

@@ -1,3 +1,4 @@
+import { CanvasTexture, LinearFilter, SRGBColorSpace, type Texture } from "three"
 import type { Point } from "./contour"
 
 export interface RasterMask {
@@ -78,12 +79,26 @@ export async function rasterizeText(
     ctx.fillText(line, rawWidth / 2, y)
   })
 
-  return { ...maskFromCanvas(ctx, canvas.width, canvas.height, 0.5, "alpha"), lineCount: lines.length }
+  return { ...maskFromCanvas(ctx, canvas.width, canvas.height, 0.5), lineCount: lines.length }
 }
+
+/**
+ * Decoded-image cache.
+ *
+ * The image is needed twice — once at grid resolution for displacement and
+ * once at texture resolution for tones — and decoding a large photo twice is
+ * both slow and, for a blob URL, a second full read. Bounded so a Studio
+ * session that tries many images does not pin them all in memory.
+ */
+const imageCache = new Map<string, Promise<HTMLImageElement>>()
+const IMAGE_CACHE_LIMIT = 6
 
 /** Load an image, honouring CORS so canvas readback is not tainted. */
 export function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
+  const cached = imageCache.get(src)
+  if (cached) return cached
+
+  const promise = new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image()
     // Data/blob URLs must not carry a crossOrigin attribute in some browsers.
     if (!/^(data:|blob:)/.test(src)) image.crossOrigin = "anonymous"
@@ -91,11 +106,19 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () =>
       reject(
         new Error(
-          `glyphforge: could not load image "${src}". Cross-origin images need CORS headers.`,
+          `glyphforge: could not load image "${src.slice(0, 80)}". Cross-origin images need CORS headers.`,
         ),
       )
     image.src = src
   })
+
+  promise.catch(() => imageCache.delete(src))
+  imageCache.set(src, promise)
+  if (imageCache.size > IMAGE_CACHE_LIMIT) {
+    const oldest = imageCache.keys().next().value as string
+    imageCache.delete(oldest)
+  }
+  return promise
 }
 
 export interface ImageRaster {
@@ -133,22 +156,123 @@ export async function rasterizeImage(src: string, resolution: number): Promise<I
   return { luminance, alpha, width, height, aspect }
 }
 
+/**
+ * Percentile black/white points.
+ *
+ * Most photographs use only a slice of the 0..1 range, and the ASCII pass then
+ * quantises that slice into a handful of glyph tiers — which is what turns a
+ * recognisable picture into undifferentiated mush. Clipping a little at each
+ * end before stretching recovers the tiers without blowing out highlights.
+ */
+export function computeLevels(values: Float32Array, clip = 0.01): { lo: number; hi: number } {
+  const buckets = new Uint32Array(256)
+  for (let i = 0; i < values.length; i++) {
+    buckets[Math.max(0, Math.min(255, Math.round(values[i] * 255)))]++
+  }
+
+  const total = values.length
+  const cut = total * clip
+
+  let lo = 0
+  let seen = 0
+  for (let i = 0; i < 256; i++) {
+    seen += buckets[i]
+    if (seen > cut) {
+      lo = i / 255
+      break
+    }
+  }
+
+  let hi = 1
+  seen = 0
+  for (let i = 255; i >= 0; i--) {
+    seen += buckets[i]
+    if (seen > cut) {
+      hi = i / 255
+      break
+    }
+  }
+
+  // Degenerate (flat) images would otherwise divide by ~zero.
+  if (hi - lo < 0.02) return { lo: 0, hi: 1 }
+  return { lo, hi }
+}
+
+/** Stretch `luminance` to fill 0..1, in place. */
+export function applyAutoLevels(raster: ImageRaster, clip = 0.01): void {
+  const { lo, hi } = computeLevels(raster.luminance, clip)
+  const span = hi - lo
+  if (span <= 0) return
+  for (let i = 0; i < raster.luminance.length; i++) {
+    raster.luminance[i] = Math.min(1, Math.max(0, (raster.luminance[i] - lo) / span))
+  }
+}
+
+/**
+ * Build the texture whose tones the ASCII pass actually reads.
+ *
+ * This is the difference between "a bumpy surface lit from the side" and "your
+ * picture": without it, the image only ever influences vertex positions and the
+ * subject is unrecognisable.
+ */
+export async function createToneTexture(
+  src: string,
+  maxSize = 1024,
+  autoContrast = true,
+): Promise<Texture> {
+  const image = await loadImage(src)
+  const natural = Math.max(image.naturalWidth, image.naturalHeight) || maxSize
+  const scale = Math.min(1, maxSize / natural)
+  const width = Math.max(2, Math.round(image.naturalWidth * scale))
+  const height = Math.max(2, Math.round(image.naturalHeight * scale))
+
+  const canvas = createCanvas(width, height)
+  const ctx = canvas.getContext("2d", { willReadFrequently: autoContrast })
+  if (!ctx) throw new Error("glyphforge: 2D canvas unavailable")
+  ctx.drawImage(image, 0, 0, width, height)
+
+  if (autoContrast) {
+    const imageData = ctx.getImageData(0, 0, width, height)
+    const data = imageData.data
+    const luminance = new Float32Array(width * height)
+    for (let i = 0, p = 0; i < luminance.length; i++, p += 4) {
+      luminance[i] = (data[p] * 0.299 + data[p + 1] * 0.587 + data[p + 2] * 0.114) / 255
+    }
+    const { lo, hi } = computeLevels(luminance)
+    const span = hi - lo
+    if (span > 0) {
+      const lut = new Uint8Array(256)
+      for (let v = 0; v < 256; v++) {
+        lut[v] = Math.min(255, Math.max(0, Math.round(((v / 255 - lo) / span) * 255)))
+      }
+      for (let p = 0; p < data.length; p += 4) {
+        data[p] = lut[data[p]]
+        data[p + 1] = lut[data[p + 1]]
+        data[p + 2] = lut[data[p + 2]]
+      }
+      ctx.putImageData(imageData, 0, 0)
+    }
+  }
+
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.minFilter = LinearFilter
+  texture.magFilter = LinearFilter
+  texture.needsUpdate = true
+  return texture
+}
+
 function maskFromCanvas(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   threshold: number,
-  channel: "alpha" | "luminance",
 ): RasterMask {
   const data = ctx.getImageData(0, 0, width, height).data
   const mask = new Uint8Array(width * height)
   const cutoff = threshold * 255
   for (let i = 0, p = 0; i < mask.length; i++, p += 4) {
-    const value =
-      channel === "alpha"
-        ? data[p + 3]
-        : (data[p] * 0.299 + data[p + 1] * 0.587 + data[p + 2] * 0.114) * (data[p + 3] / 255)
-    mask[i] = value >= cutoff ? 1 : 0
+    mask[i] = data[p + 3] >= cutoff ? 1 : 0
   }
   return { mask, width, height }
 }

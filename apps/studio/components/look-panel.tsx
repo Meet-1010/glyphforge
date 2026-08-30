@@ -175,6 +175,18 @@ export function LookPanel({ state, onChange }: LookPanelProps) {
           value={state.postfx.brightnessAdjust ?? 0}
           onChange={(brightnessAdjust) => setFx({ brightnessAdjust })}
         />
+        <Slider
+          label="Dither"
+          min={0}
+          max={2}
+          step={0.05}
+          value={state.postfx.dither ?? 0}
+          onChange={(dither) => setFx({ dither })}
+        />
+        <p className="font-mono text-[10px] leading-relaxed text-white/30">
+          Dithering recovers gradients that the glyph ramp would otherwise band into flat steps.
+          Turn it up for photographs, leave it at zero for hard-edged logos.
+        </p>
       </Panel>
 
       <Panel title="CRT">

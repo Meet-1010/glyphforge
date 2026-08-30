@@ -1,17 +1,38 @@
-import { BufferAttribute, BufferGeometry, ExtrudeGeometry } from "three"
+import { BufferAttribute, BufferGeometry, ExtrudeGeometry, PlaneGeometry } from "three"
 import { contourBounds, contoursToShapes, traceContours } from "./contour"
-import { fitTransform, rasterizeImage, thresholdRaster, type ImageRaster } from "./raster"
+import {
+  applyAutoLevels,
+  createToneTexture,
+  fitTransform,
+  rasterizeImage,
+  thresholdRaster,
+  type ImageRaster,
+} from "./raster"
 import type { ImageModelSource } from "../types"
 
 /**
  * Turn a raster image into geometry.
  *
- * `relief` displaces a grid by luminance, which suits photos, depth maps and
- * shaded logos. `extrude` traces the silhouette and pushes it out, which suits
- * flat icons and single-colour marks.
+ * `flat` maps the picture onto a plane — the most faithful "photo as ASCII".
+ * `relief` additionally displaces the surface by luminance, for depth.
+ * `extrude` traces the silhouette and pushes it out, for flat logos and icons.
+ *
+ * For `flat` and `relief`, the image is also attached as a tone texture (see
+ * `geometry.userData.map`). Without it the ASCII pass only ever sees light
+ * bouncing off a bumpy surface, and the subject is unrecognisable.
  */
 export async function forgeImage(source: ImageModelSource): Promise<BufferGeometry> {
-  const { src, mode = "relief", depth = 0.4, threshold = 0.5, double = false } = source
+  const {
+    src,
+    mode = "relief",
+    depth = 0.4,
+    threshold = 0.5,
+    double = false,
+    tones = true,
+    autoContrast = true,
+  } = source
+
+  if (!src) throw new Error("glyphforge: no image chosen yet")
 
   if (mode === "extrude") {
     const resolution = Math.max(64, Math.min(1024, source.resolution ?? 512))
@@ -21,7 +42,7 @@ export async function forgeImage(source: ImageModelSource): Promise<BufferGeomet
 
     if (contours.length === 0) {
       throw new Error(
-        "glyphforge: nothing crossed the threshold. Try a different `threshold`, or use mode \"relief\".",
+        'glyphforge: nothing crossed the threshold. Try a different `threshold`, or use mode "flat".',
       )
     }
 
@@ -44,9 +65,28 @@ export async function forgeImage(source: ImageModelSource): Promise<BufferGeomet
     return geometry
   }
 
-  const resolution = Math.max(24, Math.min(384, source.resolution ?? 160))
-  const raster = await rasterizeImage(src, resolution)
-  return buildRelief(raster, depth, double)
+  const raster = await rasterizeImage(src, Math.max(24, Math.min(384, source.resolution ?? 160)))
+  if (autoContrast) applyAutoLevels(raster)
+
+  const geometry =
+    mode === "flat" ? buildPlane(raster.aspect) : buildRelief(raster, depth, double)
+
+  if (tones) {
+    // Carried on userData so `forgeGeometry` keeps its single-return signature;
+    // GlyphModel picks this up and builds a textured material from it.
+    geometry.userData.map = await createToneTexture(src, 1024, autoContrast)
+  }
+
+  return geometry
+}
+
+/** A plane sized to the image's aspect, normalised into a 2-unit box. */
+function buildPlane(aspect: number): BufferGeometry {
+  const width = aspect >= 1 ? 2 : 2 * aspect
+  const height = aspect >= 1 ? 2 / aspect : 2
+  const geometry = new PlaneGeometry(width, height, 1, 1)
+  geometry.computeVertexNormals()
+  return geometry
 }
 
 /**
@@ -64,8 +104,6 @@ function buildRelief(raster: ImageRaster, depth: number, double: boolean): Buffe
   const positions = new Float32Array(vertexCount * layers * 3)
   const uvs = new Float32Array(vertexCount * layers * 2)
 
-  const heightAt = (i: number) => luminance[i]
-
   for (let layer = 0; layer < layers; layer++) {
     const sign = layer === 0 ? 1 : -1
     const base = layer * vertexCount
@@ -75,7 +113,7 @@ function buildRelief(raster: ImageRaster, depth: number, double: boolean): Buffe
         const v = base + i
         const u = width === 1 ? 0.5 : x / (width - 1)
         const w = height === 1 ? 0.5 : y / (height - 1)
-        const displacement = heightAt(i) * (double ? depth / 2 : depth)
+        const displacement = luminance[i] * (double ? depth / 2 : depth)
 
         positions[v * 3 + 0] = (u - 0.5) * sizeX
         positions[v * 3 + 1] = -(w - 0.5) * sizeY
@@ -99,10 +137,7 @@ function buildRelief(raster: ImageRaster, depth: number, double: boolean): Buffe
     for (let y = 0; y < height - 1; y++) {
       for (let x = 0; x < width - 1; x++) {
         const a = base + y * width + x
-        const b = a + 1
-        const c = a + width + 1
-        const d = a + width
-        quad(a, b, c, d, flip)
+        quad(a, a + 1, a + width + 1, a + width, flip)
       }
     }
   }
@@ -118,10 +153,8 @@ function buildRelief(raster: ImageRaster, depth: number, double: boolean): Buffe
     for (let k = 0; k < border.length; k++) {
       const currentFront = border[k]
       const nextFront = border[(k + 1) % border.length]
-      const currentBack = currentFront + vertexCount
-      const nextBack = nextFront + vertexCount
-      indices.push(currentFront, currentBack, nextBack)
-      indices.push(currentFront, nextBack, nextFront)
+      indices.push(currentFront, currentFront + vertexCount, nextFront + vertexCount)
+      indices.push(currentFront, nextFront + vertexCount, nextFront)
     }
   }
 

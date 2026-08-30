@@ -62,6 +62,7 @@ uniform float glitchIntensity;
 uniform float glitchFrequency;
 uniform float brightnessAdjust;
 uniform float contrastAdjust;
+uniform float ditherAmount;
 
 const vec3 LUMA = vec3(0.299, 0.587, 0.114);
 
@@ -78,6 +79,17 @@ float noise(vec2 st) {
   float d = random(i + vec2(1.0, 1.0));
   vec2 u = f * f * (3.0 - 2.0 * f);
   return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+// Compact recursive ordered-dither construction, no array lookups so it works
+// on both GLSL1 and GLSL3 targets.
+float bayer2(vec2 a) {
+  a = floor(a);
+  return fract(a.x * 0.5 + a.y * a.y * 0.75);
+}
+
+float bayer4(vec2 a) {
+  return bayer2(a * 0.5) * 0.25 + bayer2(a);
 }
 
 vec3 applyColorPalette(vec3 color, int palette) {
@@ -212,6 +224,16 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   float brightnessForGlyph = brightness;
   if (volumeShading) {
     brightnessForGlyph = clamp((brightness - 0.5) * 1.6 + 0.5, 0.0, 1.0);
+  }
+
+  // Ordered dithering trades a little spatial noise for tonal resolution. The
+  // glyph ramp only has a handful of tiers, so a smooth gradient otherwise
+  // collapses into visible bands; offsetting each cell by under one tier lets
+  // neighbouring cells straddle a boundary and average out to the true value.
+  if (ditherAmount > 0.0) {
+    float tiers = useGlyphAtlas && glyphTiles > 0.0 ? glyphTiles : 8.0;
+    brightnessForGlyph += (bayer4(cellCoord) - 0.5) * ditherAmount / tiers;
+    brightnessForGlyph = clamp(brightnessForGlyph, 0.0, 1.0);
   }
 
   float emptyThreshold = volumeShading ? 0.04 : 0.14;

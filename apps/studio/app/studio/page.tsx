@@ -39,6 +39,24 @@ export default function StudioPage() {
     [patch],
   )
 
+  /**
+   * Photographs want the opposite of what a lit 3D shape wants: no inversion
+   * (bright subject reads as dense glyphs on a dark page), no volume shading
+   * exaggeration, a finer grid, and barely any spin so a flat plane does not
+   * rotate out of view.
+   */
+  const tuneForPhoto = useCallback(() => {
+    setState((previous) => ({
+      ...previous,
+      invert: false,
+      volumeShading: false,
+      cellSize: 6,
+      characterSet: "classic",
+      postfx: { ...previous.postfx, contrastAdjust: 1.2, brightnessAdjust: 0, dither: 1 },
+      motion: { ...previous.motion, autoRotate: 0.12, hoverBoost: 1.6 },
+    }))
+  }, [])
+
   const characterSet: CharacterSet =
     state.characterSet === "procedural" ? null : (state.characterSet as CharacterSet)
 
@@ -100,6 +118,7 @@ export default function StudioPage() {
             onChange={setModel}
             material={state.material}
             onMaterialChange={(material) => patch({ material })}
+            onTuneForPhoto={tuneForPhoto}
             error={error}
           />
         </aside>

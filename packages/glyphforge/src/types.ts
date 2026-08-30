@@ -65,6 +65,12 @@ export interface AsciiPostFX {
   brightnessAdjust?: number
   /** Multiplied around mid-grey before glyph selection. @default 1 */
   contrastAdjust?: number
+  /**
+   * Ordered dithering, 0..1. Recovers smooth gradients that the glyph ramp's
+   * handful of tiers would otherwise band. Worth turning up for photographs.
+   * @default 0
+   */
+  dither?: number
 }
 
 export interface AsciiOptions {
@@ -144,11 +150,12 @@ export interface ImageModelSource {
   type: "image"
   src: string
   /**
-   * `relief` displaces a plane by luminance (photos, logos, depth maps).
+   * `flat` maps the picture onto a plane — the most faithful "photo as ASCII".
+   * `relief` also displaces the surface by luminance, adding depth.
    * `extrude` traces the alpha/luminance silhouette and extrudes it (flat logos, icons).
    * @default "relief"
    */
-  mode?: "relief" | "extrude"
+  mode?: "flat" | "relief" | "extrude"
   /** @default 0.4 */
   depth?: number
   /** Grid/trace resolution. @default 160 for relief, 512 for extrude */
@@ -157,6 +164,25 @@ export interface ImageModelSource {
   threshold?: number
   /** Mirror the relief to make a solid, double-sided object. @default false */
   double?: boolean
+  /**
+   * Map the image onto the surface so the ASCII pass reads its real tones.
+   * With this off, the picture only displaces vertices and the subject is
+   * usually unrecognisable. Ignored by `extrude`.
+   * @default true
+   */
+  tones?: boolean
+  /**
+   * Stretch the image's histogram to fill the full range before it is used.
+   * Most photos occupy a slice of 0..1, which the glyph ramp then flattens
+   * into a couple of tiers.
+   * @default true
+   */
+  autoContrast?: boolean
+  /**
+   * How strongly the image's own tones dominate over scene lighting, 0..1.
+   * @default 0.85
+   */
+  toneStrength?: number
 }
 
 /** Parametric primitive — no assets at all. */

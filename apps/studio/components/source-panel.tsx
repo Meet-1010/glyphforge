@@ -44,6 +44,8 @@ export interface SourcePanelProps {
   onChange: (model: ModelSource) => void
   material: { color: string; roughness: number; metalness: number }
   onMaterialChange: (material: { color: string; roughness: number; metalness: number }) => void
+  /** Applies glyph settings that suit photographs rather than lit 3D shapes. */
+  onTuneForPhoto: () => void
   error: string | null
 }
 
@@ -52,6 +54,7 @@ export function SourcePanel({
   onChange,
   material,
   onMaterialChange,
+  onTuneForPhoto,
   error,
 }: SourcePanelProps) {
   const kind = kindOf(model)
@@ -82,7 +85,15 @@ export function SourcePanel({
       case "shape":
         return onChange({ type: "shape", shape: "torusKnot", detail: 128, distortion: 0.35, seed: 1 })
       case "image":
-        return onChange({ type: "image", src: "", mode: "relief", depth: 0.4, resolution: 160 })
+        return onChange({
+          type: "image",
+          src: "",
+          mode: "relief",
+          depth: 0.4,
+          resolution: 160,
+          tones: true,
+          autoContrast: true,
+        })
       case "svg":
         return onChange({ type: "svg", markup: SAMPLE_SVG, depth: 0.35, bevel: 0.02 })
       case "upload":
@@ -114,7 +125,13 @@ export function SourcePanel({
         {model.type === "text" && <TextControls model={model} onChange={onChange} />}
         {model.type === "shape" && <ShapeControls model={model} onChange={onChange} />}
         {model.type === "image" && (
-          <ImageControls model={model} onChange={onChange} takeFile={takeFile} fileName={fileName} />
+          <ImageControls
+            model={model}
+            onChange={onChange}
+            takeFile={takeFile}
+            fileName={fileName}
+            onTuneForPhoto={onTuneForPhoto}
+          />
         )}
         {model.type === "svg" && (
           <SvgControls model={model} onChange={onChange} takeFile={takeFile} fileName={fileName} />
@@ -289,12 +306,17 @@ function ImageControls({
   onChange,
   takeFile,
   fileName,
+  onTuneForPhoto,
 }: {
   model: Extract<ModelSource, { type: "image" }>
   onChange: (model: ModelSource) => void
   takeFile: (file: File) => string
   fileName: string | null
+  onTuneForPhoto: () => void
 }) {
+  const mode = model.mode ?? "relief"
+  const showsTones = mode !== "extrude"
+
   return (
     <>
       <FilePicker
@@ -310,22 +332,52 @@ function ImageControls({
       />
       <Segmented
         label="Mode"
-        value={model.mode ?? "relief"}
+        value={mode}
         options={[
+          { value: "flat", label: "Flat" },
           { value: "relief", label: "Relief" },
           { value: "extrude", label: "Extrude" },
         ]}
-        onChange={(mode) => onChange({ ...model, mode })}
+        onChange={(next) => onChange({ ...model, mode: next })}
       />
-      <Slider
-        label="Depth"
-        min={0.05}
-        max={1.5}
-        step={0.01}
-        value={model.depth ?? 0.4}
-        onChange={(depth) => onChange({ ...model, depth })}
-      />
-      {model.mode === "extrude" ? (
+
+      {showsTones && (
+        <>
+          <Toggle
+            label="Show image tones"
+            checked={model.tones ?? true}
+            onChange={(tones) => onChange({ ...model, tones })}
+          />
+          <Toggle
+            label="Auto contrast"
+            checked={model.autoContrast ?? true}
+            onChange={(autoContrast) => onChange({ ...model, autoContrast })}
+          />
+          {(model.tones ?? true) && (
+            <Slider
+              label="Tone strength"
+              min={0}
+              max={1}
+              step={0.01}
+              value={model.toneStrength ?? 0.85}
+              onChange={(toneStrength) => onChange({ ...model, toneStrength })}
+            />
+          )}
+        </>
+      )}
+
+      {mode !== "flat" && (
+        <Slider
+          label="Depth"
+          min={0.05}
+          max={1.5}
+          step={0.01}
+          value={model.depth ?? 0.4}
+          onChange={(depth) => onChange({ ...model, depth })}
+        />
+      )}
+
+      {mode === "extrude" ? (
         <>
           <Slider
             label="Threshold"
@@ -345,7 +397,7 @@ function ImageControls({
             onChange={(resolution) => onChange({ ...model, resolution })}
           />
         </>
-      ) : (
+      ) : mode === "relief" ? (
         <>
           <Slider
             label="Grid detail"
@@ -362,10 +414,20 @@ function ImageControls({
             onChange={(double) => onChange({ ...model, double })}
           />
         </>
-      )}
+      ) : null}
+
+      <Button onClick={onTuneForPhoto}>Tune glyphs for a photo</Button>
+
       <p className="font-mono text-[10px] leading-relaxed text-white/30">
-        Relief suits photos and depth maps. Extrude suits flat logos — it traces the silhouette and
-        pushes it out. Remote images need CORS headers; uploads always work.
+        <span className="text-white/50">Flat</span> is the most faithful — the picture is mapped
+        straight onto a plane. <span className="text-white/50">Relief</span> adds depth by pushing
+        bright areas forward. <span className="text-white/50">Extrude</span> ignores tone and traces
+        the silhouette, which suits flat logos.
+      </p>
+      <p className="font-mono text-[10px] leading-relaxed text-white/30">
+        If a photo is hard to read, drop the cell size and turn off{" "}
+        <span className="text-white/50">Invert brightness</span> — the button above does both.
+        Remote images need CORS headers; uploads always work.
       </p>
     </>
   )
