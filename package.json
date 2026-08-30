@@ -1,0 +1,25 @@
+{
+  "name": "glyphforge-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Glyphforge — drop-in WebGL ASCII hero sections, plus an in-browser 3D model forge.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=glyphforge",
+    "dev": "npm run build --workspace=glyphforge && npm run dev --workspace=@glyphforge/studio",
+    "dev:lib": "npm run dev --workspace=glyphforge",
+    "studio": "npm run dev --workspace=@glyphforge/studio",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "license": "MIT",
+  "allowScripts": {
+    "esbuild@0.27.7": true
+  }
+}

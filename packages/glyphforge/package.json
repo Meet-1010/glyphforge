@@ -1,0 +1,77 @@
+{
+  "name": "glyphforge",
+  "version": "0.1.0",
+  "description": "Drop-in WebGL ASCII hero sections for React. One component, any 3D model \u2014 or forge one in the browser from text, SVG, an image, or a parametric shape.",
+  "keywords": [
+    "ascii",
+    "webgl",
+    "shader",
+    "three",
+    "react-three-fiber",
+    "hero",
+    "glsl",
+    "postprocessing",
+    "3d",
+    "generative",
+    "crt",
+    "landing-page"
+  ],
+  "license": "MIT",
+  "author": "Meet Chauhan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meetchauhan/glyphforge.git"
+  },
+  "homepage": "https://github.com/meetchauhan/glyphforge#readme",
+  "bugs": {
+    "url": "https://github.com/meetchauhan/glyphforge/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "glyphforge": "./dist/cli.cjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./forge": {
+      "types": "./dist/forge.d.ts",
+      "import": "./dist/forge.js",
+      "require": "./dist/forge.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@react-three/fiber": ">=8",
+    "@react-three/postprocessing": ">=2",
+    "postprocessing": ">=6.30",
+    "react": ">=18",
+    "three": ">=0.155"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/three": "^0.172.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.0"
+  }
+}
