@@ -27,14 +27,16 @@ Glyphforge removes that step in two ways:
 
 ```
 packages/glyphforge/   The npm package — components, ASCII shader, model forge, CLI
-apps/studio/           glyphforge.dev — landing page + the Studio
+apps/studio/           The site — landing, Studio, asset search, community
 ```
 
 | | |
 | --- | --- |
 | **Library** | React components, the GLSL ASCII pass, five model generators, glTF export |
 | **CLI** | `npx glyphforge init` to scaffold, `npx glyphforge add` to eject the source |
-| **Studio** | Forge a model, tune the look live, copy the component or download the `.glb` |
+| **`/studio`** | Forge a model, tune the look live, copy the component or download the `.glb` |
+| **`/assets`** | Search open 3D catalogues and send a model straight into the Studio |
+| **`/community`** | Live gallery of creations, each one a running scene rather than a screenshot |
 
 ---
 
@@ -45,32 +47,60 @@ npm install
 npm run dev
 ```
 
-That builds the library, then starts the Studio on [localhost:3000](http://localhost:3000).
-
-While working on the library itself, run its watcher in a second terminal so the Studio picks up changes:
-
-```bash
-npm run dev:lib
-```
+Starts the Studio on [localhost:3000](http://localhost:3000). No build step first —
+the Studio resolves `glyphforge` to the library's **source**, so editing the
+library hot-reloads like any other file in the app.
 
 Other scripts:
 
 ```bash
-npm run build       # build the publishable package
+npm run build       # build the publishable package (dist/)
 npm run typecheck   # typecheck every workspace
 ```
 
-The Studio consumes the library's built output rather than its source, so what you see running locally is what an installed user gets.
+The publishable bundle is verified separately by `npm run build` and by the CLI's
+eject path, rather than by being what the dev server consumes. That split is
+deliberate: pointing the Studio at `dist` meant every library edit needed a
+rebuild, and `tsup --clean` deletes that directory while Next is mid-read, which
+repeatedly left the dev server serving a broken module graph.
 
 ---
 
 ## What the Studio does
 
-- **Source** — text, parametric shape, image (relief or silhouette extrude), SVG, or an uploaded `.glb`
-- **Look** — eight presets, eight glyph ramps, cell size, tint, transparency, and the full post-fx stack live
+- **Source** — text, parametric shape, image (flat, relief, or silhouette extrude), SVG, or an uploaded `.glb`
+- **Look** — eight presets, eight glyph ramps, cell size, tint, dithering, transparency, and the full post-fx stack live
 - **Export** — copy a paste-ready component, copy the install command, download the model as `.glb`, or share a link that encodes the whole config
 
 Uploads never leave the browser. The share link carries the config in the URL; there's no server storing anything.
+
+## Asset search
+
+`/assets` searches two open catalogues — Poly Haven (521 CC0 models) and the
+Khronos glTF sample assets (119 single-file `.glb`) — and imports straight into
+the Studio.
+
+Both the APIs and their file CDNs send `Access-Control-Allow-Origin: *`, so
+search and download both run in the browser with no proxy and no API key. Poly
+Haven's multi-file glTF resolves its own `.bin` and textures because the whole
+directory is CORS-open. Nothing about a search reaches a Glyphforge server,
+because there isn't one.
+
+Licences are printed exactly as the source states them and never inferred. Poly
+Haven models are CC0; Khronos sample licences vary per model.
+
+## Community
+
+`/community` is a gallery where each card renders the real scene, live — a
+creation is a few hundred bytes of config, not an asset, so the page can rebuild
+it in your browser and hand it back to the Studio still editable.
+
+Being straight about the limits: with no backend there is nothing to upload
+*to*. Featured entries ship in `apps/studio/data/community.json`, your own saves
+live in `localStorage` on that one browser, and submissions go through a
+pre-filled GitHub issue carrying a share link. Wiring a real backend later means
+replacing `apps/studio/lib/gallery.ts` — the page reads through it, not around
+it.
 
 ---
 

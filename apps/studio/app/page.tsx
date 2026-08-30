@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { GlyphCanvas, GlyphHero } from "glyphforge"
 import { CopyButton } from "../components/ui"
+import { SiteNav } from "../components/site-nav"
 
 const SNIPPET = `import { GlyphHero } from "glyphforge"
 
@@ -41,25 +42,7 @@ const SOURCES = [
 export default function LandingPage() {
   return (
     <main className="min-h-dvh bg-ink">
-      <nav className="fixed inset-x-0 top-0 z-30 flex items-center justify-between border-b border-edge/60 bg-ink/70 px-5 py-3 backdrop-blur-md">
-        <span className="font-mono text-[13px] font-bold tracking-tight text-white">
-          glyph<span className="text-violet">forge</span>
-        </span>
-        <div className="flex items-center gap-4">
-          <a
-            href="#install"
-            className="font-mono text-[11px] text-white/45 transition-colors hover:text-white"
-          >
-            Install
-          </a>
-          <Link
-            href="/studio"
-            className="rounded-md bg-violet px-3 py-1.5 font-mono text-[11px] text-ink transition-colors hover:bg-violet-dim"
-          >
-            Open Studio
-          </Link>
-        </div>
-      </nav>
+      <SiteNav floating />
 
       <GlyphHero
         model={{ type: "shape", shape: "torusKnot", detail: 200, distortion: 0.45 }}

@@ -10,12 +10,15 @@ import { SourcePanel } from "../../components/source-panel"
 import { LookPanel } from "../../components/look-panel"
 import { ExportModal } from "../../components/export-modal"
 import { Button } from "../../components/ui"
+import { saveCreation } from "../../lib/gallery"
 
 export default function StudioPage() {
   const [state, setState] = useState<StudioState>(DEFAULT_STATE)
   const [error, setError] = useState<string | null>(null)
   const [showExport, setShowExport] = useState(false)
   const [mobilePanel, setMobilePanel] = useState<"source" | "look">("source")
+  const [saveTitle, setSaveTitle] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
   const objectRef = useRef<Object3D | null>(null)
 
   // Read a shared config from the URL. Done here rather than with
@@ -76,6 +79,18 @@ export default function StudioPage() {
           <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-white/30 sm:inline">
             Studio
           </span>
+          <Link
+            href="/assets"
+            className="hidden font-mono text-[11px] text-white/40 transition-colors hover:text-white md:inline"
+          >
+            Assets
+          </Link>
+          <Link
+            href="/community"
+            className="hidden font-mono text-[11px] text-white/40 transition-colors hover:text-white md:inline"
+          >
+            Community
+          </Link>
         </div>
 
         <div className="flex items-center gap-2">
@@ -85,6 +100,7 @@ export default function StudioPage() {
           <Button onClick={() => setState(DEFAULT_STATE)} variant="ghost">
             Reset
           </Button>
+          <Button onClick={() => { setSaved(false); setSaveTitle(defaultTitle(state)) }}>Save</Button>
           <Button variant="primary" onClick={() => setShowExport(true)}>
             Export
           </Button>
@@ -165,6 +181,103 @@ export default function StudioPage() {
       {showExport && (
         <ExportModal state={state} object={objectRef.current} onClose={() => setShowExport(false)} />
       )}
+
+      {saveTitle !== null && (
+        <SaveDialog
+          title={saveTitle}
+          saved={saved}
+          onTitleChange={setSaveTitle}
+          onClose={() => setSaveTitle(null)}
+          onSave={() => {
+            const result = saveCreation(saveTitle, state)
+            if (result) setSaved(true)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+function defaultTitle(state: StudioState): string {
+  const model = state.model
+  if (model.type === "text") return model.value.split("\n")[0].slice(0, 40) || "Untitled"
+  if (model.type === "shape") return `${model.shape} · ${state.preset}`
+  if (model.type === "image") return `image · ${state.preset}`
+  if (model.type === "svg") return `svg · ${state.preset}`
+  return `model · ${state.preset}`
+}
+
+function SaveDialog({
+  title,
+  saved,
+  onTitleChange,
+  onClose,
+  onSave,
+}: {
+  title: string
+  saved: boolean
+  onTitleChange: (title: string) => void
+  onClose: () => void
+  onSave: () => void
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="w-full max-w-md rounded-xl border border-edge bg-ink-raised p-5"
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Save creation"
+      >
+        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">Save</h2>
+
+        {saved ? (
+          <>
+            <p className="mt-3 font-mono text-[11px] leading-relaxed text-white/55">
+              Saved to this browser. It&apos;s on your Community page now.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <Link
+                href="/community"
+                className="rounded-md bg-violet px-3 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-violet-dim"
+              >
+                View gallery
+              </Link>
+              <Button variant="ghost" onClick={onClose}>
+                Keep editing
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 font-mono text-[10px] leading-relaxed text-white/30">
+              Stored in this browser only — nothing is uploaded, and clearing site data clears it.
+            </p>
+            <input
+              autoFocus
+              value={title}
+              onChange={(event) => onTitleChange(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") onSave()
+                if (event.key === "Escape") onClose()
+              }}
+              className="mt-4 w-full rounded-md border border-edge bg-ink px-3 py-2 font-mono text-[12px] text-white outline-none focus:border-violet"
+            />
+            <div className="mt-4 flex gap-2">
+              <Button variant="primary" onClick={onSave}>
+                Save
+              </Button>
+              <Button variant="ghost" onClick={onClose}>
+                Cancel
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }

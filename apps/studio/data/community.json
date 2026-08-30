@@ -1,0 +1,155 @@
+[
+  {
+    "id": "featured-terminal-knot",
+    "title": "Signal Knot",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": { "type": "shape", "shape": "torusKnot", "detail": 200, "distortion": 0.45 },
+      "preset": "terminal",
+      "cellSize": 8,
+      "tint": "#917AFF",
+      "useTint": true,
+      "characterSet": "terminal",
+      "postfx": { "contrastAdjust": 1.9, "vignetteIntensity": 0.45 }
+    }
+  },
+  {
+    "id": "featured-matrix-rain",
+    "title": "Rainfall",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": { "type": "shape", "shape": "helix", "detail": 200, "distortion": 0.5 },
+      "preset": "matrix",
+      "cellSize": 9,
+      "tint": "#3BFF7A",
+      "useTint": true,
+      "characterSet": "katakana",
+      "postfx": {
+        "contrastAdjust": 1.9,
+        "scanlineIntensity": 0.28,
+        "scanlineCount": 240,
+        "curvature": 0.06,
+        "vignetteIntensity": 0.5
+      }
+    }
+  },
+  {
+    "id": "featured-wordmark",
+    "title": "Wordmark",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": {
+        "type": "text",
+        "value": "FORGE",
+        "font": "900 200px Impact, Haettenschweiler, sans-serif",
+        "depth": 0.45,
+        "bevel": 0.03
+      },
+      "preset": "brutalist",
+      "cellSize": 10,
+      "tint": "#FFFFFF",
+      "useTint": true,
+      "characterSet": "blocks",
+      "postfx": { "contrastAdjust": 2.1 }
+    }
+  },
+  {
+    "id": "featured-amber-gear",
+    "title": "Workshop",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": { "type": "shape", "shape": "gear", "detail": 160, "distortion": 0.55 },
+      "preset": "amber",
+      "cellSize": 9,
+      "tint": "#FFB53B",
+      "useTint": true,
+      "characterSet": "classic",
+      "postfx": {
+        "contrastAdjust": 1.7,
+        "scanlineIntensity": 0.2,
+        "vignetteIntensity": 0.45,
+        "targetFPS": 24
+      }
+    }
+  },
+  {
+    "id": "featured-blueprint-crystal",
+    "title": "Cold Open",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": { "type": "shape", "shape": "crystal", "detail": 128, "distortion": 0.62, "seed": 7 },
+      "preset": "blueprint",
+      "cellSize": 7,
+      "tint": "#5AC8FA",
+      "useTint": true,
+      "characterSet": "dots",
+      "volumeShading": false,
+      "backgroundColor": "#05080F",
+      "postfx": { "contrastAdjust": 1.5, "vignetteIntensity": 0.35 }
+    }
+  },
+  {
+    "id": "featured-glitch-blob",
+    "title": "Bad Signal",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": { "type": "shape", "shape": "blob", "detail": 128, "distortion": 0.5, "seed": 23 },
+      "preset": "glitch",
+      "cellSize": 9,
+      "tint": "#FF4D6D",
+      "useTint": true,
+      "characterSet": "terminal",
+      "postfx": {
+        "contrastAdjust": 1.9,
+        "aberrationStrength": 0.0035,
+        "glitchIntensity": 0.06,
+        "glitchFrequency": 9,
+        "jitterIntensity": 0.35,
+        "jitterSpeed": 14,
+        "targetFPS": 30
+      }
+    }
+  },
+  {
+    "id": "featured-paper-star",
+    "title": "Letterpress",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": {
+        "type": "svg",
+        "markup": "<svg viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M50 5 L61 39 L97 39 L68 60 L79 95 L50 74 L21 95 L32 60 L3 39 L39 39 Z\" fill=\"black\"/></svg>",
+        "depth": 0.3,
+        "bevel": 0.02
+      },
+      "preset": "paper",
+      "cellSize": 8,
+      "tint": "#111111",
+      "useTint": true,
+      "characterSet": "classic",
+      "backgroundColor": "#F5F3EE",
+      "postfx": { "contrastAdjust": 1.6 }
+    }
+  },
+  {
+    "id": "featured-chromatic-capsule",
+    "title": "Lozenge",
+    "author": "Glyphforge",
+    "createdAt": "2026-08-30",
+    "config": {
+      "model": { "type": "shape", "shape": "capsule", "detail": 160, "distortion": 0.3 },
+      "preset": "chromatic",
+      "cellSize": 8,
+      "useTint": false,
+      "characterSet": "shades",
+      "material": { "color": "#5AC8FA", "roughness": 0.08, "metalness": 0.2 },
+      "postfx": { "contrastAdjust": 1.6, "vignetteIntensity": 0.3 }
+    }
+  }
+]

@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspace=glyphforge",
-    "dev": "npm run build --workspace=glyphforge && npm run dev --workspace=@glyphforge/studio",
+    "dev": "npm run dev --workspace=@glyphforge/studio",
     "dev:lib": "npm run dev --workspace=glyphforge",
     "studio": "npm run dev --workspace=@glyphforge/studio",
     "typecheck": "npm run typecheck --workspaces --if-present",
