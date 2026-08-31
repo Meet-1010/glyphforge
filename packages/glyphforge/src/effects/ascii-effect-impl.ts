@@ -9,7 +9,7 @@ import {
   type WebGLRenderTarget,
 } from "three"
 import { asciiFragmentShader } from "./ascii-shader"
-import type { AsciiOptions, AsciiStyle, ColorPalette } from "../types"
+import type { AsciiOptions, AsciiPostFX, AsciiStyle, ColorPalette } from "../types"
 
 const STYLE_INDEX: Record<AsciiStyle, number> = {
   standard: 0,
@@ -24,6 +24,42 @@ const PALETTE_INDEX: Record<ColorPalette, number> = {
   amber: 2,
   cyan: 3,
   blue: 4,
+}
+
+/**
+ * Every post-fx default, spelled out.
+ *
+ * `applyOptions` fills unspecified keys from here rather than leaving the
+ * previous value in place. Presets replace `postfx` wholesale with a partial
+ * object, so anything a preset does not mention has to be actively reset —
+ * otherwise switching away from a preset silently keeps its effects, because
+ * the effect instance is long-lived and mutated in place.
+ */
+const POSTFX_DEFAULTS: Required<AsciiPostFX> = {
+  scanlineIntensity: 0,
+  scanlineCount: 200,
+  targetFPS: 0,
+  jitterIntensity: 0,
+  jitterSpeed: 1,
+  mouseGlowEnabled: false,
+  mouseGlowRadius: 200,
+  mouseGlowIntensity: 1.5,
+  vignetteIntensity: 0,
+  vignetteRadius: 0.8,
+  colorPalette: "none",
+  curvature: 0,
+  aberrationStrength: 0,
+  noiseIntensity: 0,
+  noiseScale: 1,
+  noiseSpeed: 1,
+  waveAmplitude: 0,
+  waveFrequency: 10,
+  waveSpeed: 1,
+  glitchIntensity: 0,
+  glitchFrequency: 0,
+  brightnessAdjust: 0,
+  contrastAdjust: 1,
+  dither: 0,
 }
 
 export interface AsciiEffectImplOptions extends AsciiOptions {
@@ -110,18 +146,30 @@ export class AsciiEffectImpl extends Effect {
     if (uniform) uniform.value = value
   }
 
-  /** Write every supplied option into its uniform. Safe to call every render. */
+  /**
+   * Apply a complete description of the effect's look.
+   *
+   * This is declarative, not a patch: any look option left out is reset to its
+   * documented default. That matters because the instance is created once and
+   * mutated in place, so a "only write what was passed" version leaks settings
+   * between presets — switch to a preset that enables pointer glow and every
+   * later preset keeps glowing.
+   *
+   * Frame state (`resolution`, `mousePos`, the glyph atlas, `animate`) is the
+   * exception and is only written when supplied, since it is per-frame plumbing
+   * rather than part of the look.
+   */
   applyOptions(options: AsciiEffectImplOptions) {
     const {
-      cellSize,
-      invert,
-      color,
-      glyphStyle,
-      volumeShading,
+      cellSize = 9,
+      invert = true,
+      color = true,
+      glyphStyle = "standard",
+      volumeShading = true,
       tint,
-      transparent,
-      backgroundColor,
-      bgThreshold,
+      transparent = false,
+      backgroundColor = "#000000",
+      bgThreshold = 0.06,
       resolution,
       mousePos,
       glyphAtlas,
@@ -130,69 +178,64 @@ export class AsciiEffectImpl extends Effect {
       postfx,
     } = options
 
-    if (cellSize !== undefined) this.set("cellSize", cellSize)
-    if (invert !== undefined) this.set("invert", invert)
-    if (color !== undefined) this.set("colorMode", color)
-    if (glyphStyle !== undefined) this.set("asciiStyle", STYLE_INDEX[glyphStyle] ?? 0)
-    if (volumeShading !== undefined) this.set("volumeShading", volumeShading)
-    if (transparent !== undefined) this.set("transparent", transparent)
-    if (bgThreshold !== undefined) this.set("bgThreshold", bgThreshold)
+    this.set("cellSize", cellSize)
+    this.set("invert", invert)
+    this.set("colorMode", color)
+    this.set("asciiStyle", STYLE_INDEX[glyphStyle] ?? 0)
+    this.set("volumeShading", volumeShading)
+    this.set("transparent", transparent)
+    this.set("bgThreshold", bgThreshold)
+
+    // An absent tint means "use the scene's own colour", so it must clear the
+    // flag rather than leave the last preset's tint switched on.
+    this.set("useTintColor", Boolean(tint))
+    if (tint) {
+      this._tintColor.set(tint)
+      this.set("tintColor", new Vector3(this._tintColor.r, this._tintColor.g, this._tintColor.b))
+    }
+
+    this._backgroundColor.set(backgroundColor)
+    this.set(
+      "backgroundColor",
+      new Vector3(this._backgroundColor.r, this._backgroundColor.g, this._backgroundColor.b),
+    )
+
+    const fx: Required<AsciiPostFX> = { ...POSTFX_DEFAULTS, ...(postfx ?? {}) }
+
+    this.set("scanlineIntensity", fx.scanlineIntensity)
+    this.set("scanlineCount", fx.scanlineCount)
+    this.set("targetFPS", fx.targetFPS)
+    this.set("jitterIntensity", fx.jitterIntensity)
+    this.set("jitterSpeed", fx.jitterSpeed)
+    this.set("mouseGlowEnabled", fx.mouseGlowEnabled)
+    this.set("mouseGlowRadius", fx.mouseGlowRadius)
+    this.set("mouseGlowIntensity", fx.mouseGlowIntensity)
+    this.set("vignetteIntensity", fx.vignetteIntensity)
+    this.set("vignetteRadius", fx.vignetteRadius)
+    this.set("colorPalette", PALETTE_INDEX[fx.colorPalette] ?? 0)
+    this.set("curvature", fx.curvature)
+    this.set("aberrationStrength", fx.aberrationStrength)
+    this.set("noiseIntensity", fx.noiseIntensity)
+    this.set("noiseScale", fx.noiseScale)
+    this.set("noiseSpeed", fx.noiseSpeed)
+    this.set("waveAmplitude", fx.waveAmplitude)
+    this.set("waveFrequency", fx.waveFrequency)
+    this.set("waveSpeed", fx.waveSpeed)
+    this.set("glitchIntensity", fx.glitchIntensity)
+    this.set("glitchFrequency", fx.glitchFrequency)
+    this.set("brightnessAdjust", fx.brightnessAdjust)
+    this.set("contrastAdjust", fx.contrastAdjust)
+    this.set("ditherAmount", fx.dither)
+
+    // -- frame state: only written when supplied ------------------------------
     if (animate !== undefined) this._animate = animate
-
-    if (tint !== undefined) {
-      this.set("useTintColor", Boolean(tint))
-      if (tint) {
-        this._tintColor.set(tint)
-        this.set("tintColor", new Vector3(this._tintColor.r, this._tintColor.g, this._tintColor.b))
-      }
-    }
-
-    if (backgroundColor !== undefined) {
-      this._backgroundColor.set(backgroundColor)
-      this.set(
-        "backgroundColor",
-        new Vector3(this._backgroundColor.r, this._backgroundColor.g, this._backgroundColor.b),
-      )
-    }
-
     if (resolution !== undefined) this.set("resolution", resolution)
     if (mousePos !== undefined) this.set("mousePos", mousePos)
-
     if (glyphAtlas !== undefined) {
       this.set("glyphAtlas", glyphAtlas)
       this.set("useGlyphAtlas", Boolean(glyphAtlas))
     }
     if (glyphTiles !== undefined) this.set("glyphTiles", glyphTiles)
-
-    if (postfx) {
-      const fx = postfx
-      if (fx.scanlineIntensity !== undefined) this.set("scanlineIntensity", fx.scanlineIntensity)
-      if (fx.scanlineCount !== undefined) this.set("scanlineCount", fx.scanlineCount)
-      if (fx.targetFPS !== undefined) this.set("targetFPS", fx.targetFPS)
-      if (fx.jitterIntensity !== undefined) this.set("jitterIntensity", fx.jitterIntensity)
-      if (fx.jitterSpeed !== undefined) this.set("jitterSpeed", fx.jitterSpeed)
-      if (fx.mouseGlowEnabled !== undefined) this.set("mouseGlowEnabled", fx.mouseGlowEnabled)
-      if (fx.mouseGlowRadius !== undefined) this.set("mouseGlowRadius", fx.mouseGlowRadius)
-      if (fx.mouseGlowIntensity !== undefined) this.set("mouseGlowIntensity", fx.mouseGlowIntensity)
-      if (fx.vignetteIntensity !== undefined) this.set("vignetteIntensity", fx.vignetteIntensity)
-      if (fx.vignetteRadius !== undefined) this.set("vignetteRadius", fx.vignetteRadius)
-      if (fx.colorPalette !== undefined) {
-        this.set("colorPalette", PALETTE_INDEX[fx.colorPalette] ?? 0)
-      }
-      if (fx.curvature !== undefined) this.set("curvature", fx.curvature)
-      if (fx.aberrationStrength !== undefined) this.set("aberrationStrength", fx.aberrationStrength)
-      if (fx.noiseIntensity !== undefined) this.set("noiseIntensity", fx.noiseIntensity)
-      if (fx.noiseScale !== undefined) this.set("noiseScale", fx.noiseScale)
-      if (fx.noiseSpeed !== undefined) this.set("noiseSpeed", fx.noiseSpeed)
-      if (fx.waveAmplitude !== undefined) this.set("waveAmplitude", fx.waveAmplitude)
-      if (fx.waveFrequency !== undefined) this.set("waveFrequency", fx.waveFrequency)
-      if (fx.waveSpeed !== undefined) this.set("waveSpeed", fx.waveSpeed)
-      if (fx.glitchIntensity !== undefined) this.set("glitchIntensity", fx.glitchIntensity)
-      if (fx.glitchFrequency !== undefined) this.set("glitchFrequency", fx.glitchFrequency)
-      if (fx.brightnessAdjust !== undefined) this.set("brightnessAdjust", fx.brightnessAdjust)
-      if (fx.contrastAdjust !== undefined) this.set("contrastAdjust", fx.contrastAdjust)
-      if (fx.dither !== undefined) this.set("ditherAmount", fx.dither)
-    }
   }
 
   override update(renderer: WebGLRenderer, _inputBuffer: WebGLRenderTarget, deltaTime = 0) {
