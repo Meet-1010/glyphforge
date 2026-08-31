@@ -1,26 +1,38 @@
 @import "tailwindcss";
 
+/**
+ * Monochrome by design.
+ *
+ * There is no accent colour in the chrome — every hue on the page comes from
+ * the ASCII canvases themselves. A tool whose whole output is coloured glyphs
+ * does not need the interface competing with it, and a single violet accent on
+ * dark slate is the one combination every generated site already uses.
+ *
+ * Bone is warm rather than blue-grey, which is most of why the page reads as
+ * printed rather than as a dashboard.
+ */
 @theme {
-  --color-ink: #08080b;
-  --color-ink-raised: #0e0e13;
-  --color-ink-panel: #121219;
-  --color-edge: #23232e;
-  --color-edge-bright: #34344a;
-  --color-violet: #917aff;
-  --color-violet-dim: #6f5cd6;
-  --color-mint: #3bff7a;
-  --color-amber: #ffb53b;
+  --color-ink: #0a0a0a;
+  --color-ink-2: #101010;
+  --color-ink-3: #161615;
+  --color-bone: #edeae3;
+  --color-bone-dim: #a8a49a;
+  --color-muted: #6f6c64;
+  --color-rule: #262523;
+  --color-rule-bright: #3b3a36;
 
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
 html,
 body {
   background: var(--color-ink);
-  color: #e8e8ef;
-  font-family: var(--font-sans);
+  color: var(--color-bone);
+  font-family: var(--font-mono);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -29,57 +41,84 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-violet) 35%, transparent);
+  background: var(--color-bone);
+  color: var(--color-ink);
 }
 
-/* Thin, dark scrollbars so the control panels don't get bright gutters. */
+/* Display face wants tighter tracking at large sizes than its default. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+}
+
+/* The eyebrow labels that number each section, like a spec sheet. */
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/**
+ * Hairlines drawn as repeated box-drawing glyphs rather than a CSS border.
+ * On a page about character grids, a rule made of characters is the honest
+ * version — and it picks up the monospace rhythm the rest of the layout uses.
+ */
+.rule-chars::before {
+  content: "────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────";
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--color-rule-bright);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  user-select: none;
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-edge-bright) transparent;
+  scrollbar-color: var(--color-rule-bright) transparent;
 }
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 *::-webkit-scrollbar-thumb {
-  background: var(--color-edge-bright);
-  border-radius: 4px;
+  background: var(--color-rule-bright);
 }
 *::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Range inputs, styled once here rather than per-control. */
+/* Square, thin, monochrome — no pill thumbs. */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 2px;
-  background: var(--color-edge-bright);
-  border-radius: 2px;
+  height: 1px;
+  background: var(--color-rule-bright);
   outline: none;
 }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--color-violet);
-  cursor: pointer;
-  border: 2px solid var(--color-ink);
-  transition: transform 120ms ease;
-}
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.25);
+  width: 9px;
+  height: 14px;
+  background: var(--color-bone);
+  cursor: ew-resize;
+  border: none;
 }
 input[type="range"]::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--color-violet);
-  cursor: pointer;
-  border: 2px solid var(--color-ink);
+  width: 9px;
+  height: 14px;
+  border-radius: 0;
+  background: var(--color-bone);
+  cursor: ew-resize;
+  border: none;
 }
 
 input[type="color"] {
@@ -94,8 +133,8 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 input[type="color"]::-webkit-color-swatch {
-  border: 1px solid var(--color-edge-bright);
-  border-radius: 6px;
+  border: 1px solid var(--color-rule-bright);
+  border-radius: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

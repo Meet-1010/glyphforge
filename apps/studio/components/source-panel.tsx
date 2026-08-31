@@ -128,7 +128,7 @@ export function SourcePanel({
         />
 
         {error && (
-          <p className="rounded-md border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] leading-relaxed text-red-300/80">
+          <p className="border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] leading-relaxed text-red-300/80">
             {error}
           </p>
         )}
@@ -153,7 +153,7 @@ export function SourcePanel({
       </Panel>
 
       <Collapsible title="Material">
-        <p className="font-mono text-[10px] leading-relaxed text-white/30">
+        <p className="font-mono text-[10px] leading-relaxed text-bone/30">
           The ASCII pass reads luminance, so lighting matters more than hue. Lower roughness gives
           sharper highlights and more character contrast.
         </p>
@@ -252,7 +252,7 @@ function TextControls({
         value={model.smoothing ?? 1.2}
         onChange={(smoothing) => onChange({ ...model, smoothing })}
       />
-      <p className="font-mono text-[10px] leading-relaxed text-white/30">
+      <p className="font-mono text-[10px] leading-relaxed text-bone/30">
         Emoji work too. Higher trace detail keeps fine serifs; higher smoothing gives chunkier,
         more legible glyphs once the ASCII pass halves the resolution again.
       </p>
@@ -429,15 +429,15 @@ function ImageControls({
 
       <Button onClick={onTuneForPhoto}>Tune glyphs for a photo</Button>
 
-      <p className="font-mono text-[10px] leading-relaxed text-white/30">
-        <span className="text-white/50">Flat</span> is the most faithful — the picture is mapped
-        straight onto a plane. <span className="text-white/50">Relief</span> adds depth by pushing
-        bright areas forward. <span className="text-white/50">Extrude</span> ignores tone and traces
+      <p className="font-mono text-[10px] leading-relaxed text-bone/30">
+        <span className="text-bone/50">Flat</span> is the most faithful — the picture is mapped
+        straight onto a plane. <span className="text-bone/50">Relief</span> adds depth by pushing
+        bright areas forward. <span className="text-bone/50">Extrude</span> ignores tone and traces
         the silhouette, which suits flat logos.
       </p>
-      <p className="font-mono text-[10px] leading-relaxed text-white/30">
+      <p className="font-mono text-[10px] leading-relaxed text-bone/30">
         If a photo is hard to read, drop the cell size and turn off{" "}
-        <span className="text-white/50">Invert brightness</span> — the button above does both.
+        <span className="text-bone/50">Invert brightness</span> — the button above does both.
         Remote images need CORS headers; uploads always work.
       </p>
     </>
@@ -490,7 +490,7 @@ function SvgControls({
         value={model.bevel ?? 0.02}
         onChange={(bevel) => onChange({ ...model, bevel })}
       />
-      <p className="font-mono text-[10px] leading-relaxed text-white/30">
+      <p className="font-mono text-[10px] leading-relaxed text-bone/30">
         Filled paths extrude cleanly. Strokes do not — outline them first in your editor.
       </p>
     </>
@@ -521,7 +521,7 @@ function UploadControls({
         placeholder="/models/mine.glb"
         onChange={(src) => onChange({ type: "url", src })}
       />
-      <p className="font-mono text-[10px] leading-relaxed text-white/30">
+      <p className="font-mono text-[10px] leading-relaxed text-bone/30">
         Auto-fitted and centred on load, so no scale guessing. Uploads stay in your browser — nothing
         is sent anywhere.
       </p>
@@ -544,7 +544,7 @@ function FilePicker({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="w-full truncate rounded-md border border-dashed border-edge-bright bg-ink px-3 py-3 text-left font-mono text-[11px] text-white/55 transition-colors hover:border-violet hover:text-white/80"
+        className="w-full truncate border border-dashed border-rule-bright bg-ink px-3 py-3 text-left font-mono text-[11px] text-bone/55 transition-colors hover:border-bone hover:text-bone/80"
       >
         {label}
       </button>

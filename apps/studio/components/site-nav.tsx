@@ -15,27 +15,43 @@ export function SiteNav({ floating = false }: { floating?: boolean }) {
   return (
     <nav
       className={`${
-        floating ? "fixed inset-x-0 top-0 z-30 bg-ink/70 backdrop-blur-md" : "sticky top-0 z-30 bg-ink"
-      } flex items-center justify-between gap-4 border-b border-edge px-5 py-3`}
+        floating ? "fixed inset-x-0 top-0 z-30 bg-ink/80 backdrop-blur-md" : "sticky top-0 z-30 bg-ink"
+      } flex items-center justify-between gap-4 border-b border-rule px-5 py-3.5`}
     >
-      <Link href="/" className="font-mono text-[13px] font-bold tracking-tight text-white">
-        glyph<span className="text-violet">forge</span>
+      <Link href="/" className="group flex items-baseline gap-1.5">
+        {/* A bracket rather than a coloured second syllable: the wordmark should
+            read as a prompt, and the page has no accent colour to spend. */}
+        <span className="font-mono text-[13px] tracking-tight text-bone">glyphforge</span>
+        <span className="font-mono text-[13px] text-muted transition-colors group-hover:text-bone">
+          ▮
+        </span>
       </Link>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-5">
         {LINKS.map((link) => {
           const active = pathname === link.href
           const primary = link.href === "/studio"
+
+          if (primary) {
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="bg-bone px-3.5 py-1.5 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
+              >
+                {link.label}
+              </Link>
+            )
+          }
+
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`rounded-md px-3 py-1.5 font-mono text-[11px] transition-colors ${
-                primary
-                  ? "bg-violet text-ink hover:bg-violet-dim"
-                  : active
-                    ? "text-white"
-                    : "text-white/45 hover:text-white"
+              className={`font-mono text-[11px] transition-colors ${
+                active
+                  ? "text-bone underline decoration-rule-bright underline-offset-[6px]"
+                  : "text-muted hover:text-bone"
               }`}
             >
               {link.label}

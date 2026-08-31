@@ -78,7 +78,7 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
 
   return (
     <>
-      <div className="sticky top-0 z-10 border-b border-edge bg-ink px-4 py-3">
+      <div className="sticky top-0 z-10 border-b border-rule bg-ink px-4 py-3">
         <Segmented
           value={mode}
           onChange={setMode}
@@ -97,17 +97,17 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
               type="button"
               onClick={() => applyPreset(name)}
               title={PRESET_BLURBS[name]}
-              className={`rounded-md border px-2 py-2 text-left font-mono text-[10px] uppercase tracking-wider transition-colors ${
+              className={` border px-2 py-2 text-left font-mono text-[10px] uppercase tracking-wider transition-colors ${
                 state.preset === name
-                  ? "border-violet bg-violet/10 text-violet"
-                  : "border-edge text-white/45 hover:border-edge-bright hover:text-white/75"
+                  ? "border-bone bg-bone/10 text-bone"
+                  : "border-rule text-bone/45 hover:border-rule-bright hover:text-bone/75"
               }`}
             >
               {name}
             </button>
           ))}
         </div>
-        <p className="font-mono text-[10px] leading-relaxed text-white/30">
+        <p className="font-mono text-[10px] leading-relaxed text-bone/30">
           {PRESET_BLURBS[state.preset]}
         </p>
       </Panel>
@@ -162,8 +162,8 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
               onChange={(on) => setMotion({ animation: on })}
             />
           )}
-          <p className="pt-1 font-mono text-[10px] leading-relaxed text-white/30">
-            Switch to <span className="text-white/50">All settings</span> for scanlines, glitch,
+          <p className="pt-1 font-mono text-[10px] leading-relaxed text-bone/30">
+            Switch to <span className="text-bone/50">All settings</span> for scanlines, glitch,
             curvature, dithering and the rest.
           </p>
         </Panel>
@@ -240,7 +240,7 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
                 setFx({ colorPalette: colorPalette as AsciiPostFX["colorPalette"] })
               }
             />
-            <p className="font-mono text-[10px] leading-relaxed text-white/30">
+            <p className="font-mono text-[10px] leading-relaxed text-bone/30">
               Transparent mode drops the background so the hero composites over whatever your page
               already has behind it.
             </p>
@@ -271,9 +271,9 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
               value={state.postfx.dither ?? 0}
               onChange={(dither) => setFx({ dither })}
             />
-            <p className="font-mono text-[10px] leading-relaxed text-white/30">
+            <p className="font-mono text-[10px] leading-relaxed text-bone/30">
               Dithering recovers gradients the glyph ramp would otherwise band into flat steps. Turn
-              it up for photographs, leave it at zero for hard-edged logos.
+              it up for photographs, leave it at zero for hard-ruled logos.
             </p>
           </Collapsible>
 
@@ -488,9 +488,9 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
               checked={state.motion.draggable ?? true}
               onChange={(draggable) => setMotion({ draggable })}
             />
-            <p className="font-mono text-[10px] leading-relaxed text-white/30">
+            <p className="font-mono text-[10px] leading-relaxed text-bone/30">
               Rotation, animation and time-based effects stop automatically for visitors with
-              <span className="text-white/50"> prefers-reduced-motion</span> set, and rendering
+              <span className="text-bone/50"> prefers-reduced-motion</span> set, and rendering
               pauses when the hero scrolls out of view.
             </p>
           </Collapsible>

@@ -84,7 +84,7 @@ export default function AssetsPage() {
       <SiteNav />
 
       {/* Sticky so the filters stay reachable deep in a long grid. */}
-      <div className="sticky top-[49px] z-20 border-b border-edge bg-ink/95 backdrop-blur-md">
+      <div className="sticky top-[49px] z-20 border-b border-rule bg-ink/95 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-5 py-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
@@ -93,9 +93,9 @@ export default function AssetsPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={`Search ${TOTAL_ASSETS.toLocaleString()} importable models…`}
-                className="w-full rounded-lg border border-edge bg-ink-raised px-4 py-3 pr-20 font-mono text-[13px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-violet"
+                className="w-full border border-rule bg-ink-2 px-4 py-3 pr-20 font-mono text-[13px] text-bone outline-none transition-colors placeholder:text-bone/25 focus:border-bone"
               />
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-mono text-[10px] text-white/25">
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-mono text-[10px] text-bone/25">
                 {loading ? "…" : outcome ? outcome.total.toLocaleString() : ""}
               </span>
             </div>
@@ -103,10 +103,10 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setAnimatedOnly((value) => !value)}
-              className={`shrink-0 rounded-lg border px-4 py-3 font-mono text-[11px] transition-colors ${
+              className={`shrink-0  border px-4 py-3 font-mono text-[11px] transition-colors ${
                 animatedOnly
-                  ? "border-violet bg-violet/10 text-violet"
-                  : "border-edge text-white/45 hover:border-edge-bright hover:text-white/75"
+                  ? "border-bone bg-bone/10 text-bone"
+                  : "border-rule text-bone/45 hover:border-rule-bright hover:text-bone/75"
               }`}
             >
               Animated only
@@ -122,10 +122,10 @@ export default function AssetsPage() {
                   type="button"
                   onClick={() => toggleProvider(provider.id)}
                   title={`${provider.blurb}\n${provider.license}`}
-                  className={`rounded-md border px-2.5 py-1 font-mono text-[10px] transition-colors ${
+                  className={` border px-2.5 py-1 font-mono text-[10px] transition-colors ${
                     active
-                      ? "border-violet/50 bg-violet/10 text-violet"
-                      : "border-edge text-white/35 hover:border-edge-bright hover:text-white/60"
+                      ? "border-bone/50 bg-bone/10 text-bone"
+                      : "border-rule text-bone/35 hover:border-rule-bright hover:text-bone/60"
                   }`}
                 >
                   {provider.label}
@@ -140,13 +140,13 @@ export default function AssetsPage() {
       <div className="mx-auto max-w-6xl px-5 py-8">
         {!query && (
           <div className="mb-6 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[10px] text-white/25">Try:</span>
+            <span className="font-mono text-[10px] text-bone/25">Try:</span>
             {SUGGESTIONS.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
                 onClick={() => setQuery(suggestion)}
-                className="rounded-md border border-edge px-2.5 py-1 font-mono text-[10px] text-white/40 transition-colors hover:border-violet hover:text-violet"
+                className="border border-rule px-2.5 py-1 font-mono text-[10px] text-bone/40 transition-colors hover:border-bone hover:text-bone"
               >
                 {suggestion}
               </button>
@@ -155,7 +155,7 @@ export default function AssetsPage() {
         )}
 
         {animatedOnly && (
-          <p className="mb-4 rounded-md border border-edge bg-ink-raised px-3 py-2 font-mono text-[10px] leading-relaxed text-white/40">
+          <p className="mb-4 border border-rule bg-ink-2 px-3 py-2 font-mono text-[10px] leading-relaxed text-bone/40">
             Showing only models their catalogue reports as animated. Objaverse publishes no
             animation flag, so its 46,207 models are excluded from this filter rather than guessed
             at — clear it to browse them.
@@ -165,7 +165,7 @@ export default function AssetsPage() {
         {outcome?.failed.map((failure) => (
           <p
             key={failure.provider}
-            className="mb-4 rounded-md border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] text-amber/80"
+            className="mb-4 border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] text-amber/80"
           >
             {PROVIDERS.find((p) => p.id === failure.provider)?.label} is unreachable:{" "}
             {failure.message}
@@ -173,7 +173,7 @@ export default function AssetsPage() {
         ))}
 
         {importError && (
-          <p className="mb-4 rounded-md border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] text-red-300/80">
+          <p className="mb-4 border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] text-red-300/80">
             {importError}
           </p>
         )}
@@ -191,17 +191,17 @@ export default function AssetsPage() {
         </div>
 
         {!loading && outcome && outcome.total === 0 && (
-          <p className="mt-20 text-center font-mono text-[11px] text-white/30">
+          <p className="mt-20 text-center font-mono text-[11px] text-bone/30">
             Nothing matched “{query}”. Try a broader word, or forge one from scratch in the{" "}
-            <a href="/studio" className="text-violet hover:text-white">
+            <a href="/studio" className="text-bone hover:text-bone">
               Studio
             </a>
             .
           </p>
         )}
 
-        <footer className="mt-16 border-t border-edge pt-6">
-          <p className="max-w-3xl font-mono text-[10px] leading-relaxed text-white/30">
+        <footer className="mt-16 border-t border-rule pt-6">
+          <p className="max-w-3xl font-mono text-[10px] leading-relaxed text-bone/30">
             Licences are printed exactly as each source states them and are never inferred. Poly
             Haven is CC0; Objaverse models are individually licensed on Sketchfab, mostly CC-BY;
             Khronos and three.js vary per model. Check the source before using anything
@@ -256,9 +256,9 @@ function AssetCard({
   return (
     <article
       ref={ref}
-      className="group flex flex-col overflow-hidden rounded-xl border border-edge bg-ink-raised transition-colors hover:border-edge-bright"
+      className="group flex flex-col overflow-hidden border border-rule bg-ink-2 transition-colors hover:border-rule-bright"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-ink-panel">
+      <div className="relative aspect-[4/3] overflow-hidden bg-ink-3">
         {merged.thumbnail && !broken ? (
           // Thumbnails come from several hosts; next/image would need each one
           // allow-listed in next.config for no real benefit here.
@@ -271,17 +271,17 @@ function AssetCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="grid h-full place-items-center font-mono text-[10px] text-white/15">
+          <div className="grid h-full place-items-center font-mono text-[10px] text-bone/15">
             {asset.enrich && !extra ? "···" : "no preview"}
           </div>
         )}
 
-        <span className="absolute left-2 top-2 rounded bg-ink/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/60 backdrop-blur-sm">
+        <span className="absolute left-2 top-2 bg-ink/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-bone/60 backdrop-blur-sm">
           {provider?.label}
         </span>
 
         {merged.animated && (
-          <span className="absolute right-2 top-2 rounded bg-violet/90 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-ink">
+          <span className="absolute right-2 top-2 bg-bone/90 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-ink">
             Animated
           </span>
         )}
@@ -289,10 +289,10 @@ function AssetCard({
 
       <div className="flex flex-1 flex-col gap-2.5 p-3.5">
         <div className="flex-1">
-          <h3 className="truncate font-mono text-[12px] text-white" title={merged.name}>
+          <h3 className="truncate font-mono text-[12px] text-bone" title={merged.name}>
             {merged.name}
           </h3>
-          <p className="mt-1 truncate font-mono text-[10px] text-white/35">
+          <p className="mt-1 truncate font-mono text-[10px] text-bone/35">
             {merged.author ? `${merged.author} · ` : ""}
             {merged.license}
           </p>
@@ -309,7 +309,7 @@ function AssetCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 title="View licence and original"
-                className="rounded-md px-2 py-2 font-mono text-[10px] text-white/30 transition-colors hover:bg-white/5 hover:text-white/70"
+                className="px-2 py-2 font-mono text-[10px] text-bone/30 transition-colors hover:bg-bone/5 hover:text-bone/70"
               >
                 Source
               </a>
@@ -319,7 +319,7 @@ function AssetCard({
               href={asset.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md border border-edge px-3 py-2 font-mono text-[11px] text-white/60 transition-colors hover:border-edge-bright hover:text-white"
+              className="border border-rule px-3 py-2 font-mono text-[11px] text-bone/60 transition-colors hover:border-rule-bright hover:text-bone"
             >
               Open on Sketchfab
             </a>

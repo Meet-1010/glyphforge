@@ -52,16 +52,16 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
       role="presentation"
     >
       <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-edge bg-ink-raised shadow-2xl"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden border border-rule bg-ink-2 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Export"
       >
-        <header className="flex items-center justify-between border-b border-edge px-5 py-4">
+        <header className="flex items-center justify-between border-b border-rule px-5 py-4">
           <div>
-            <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">Export</h2>
-            <p className="mt-1 font-mono text-[10px] text-white/30">
+            <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-bone/50">Export</h2>
+            <p className="mt-1 font-mono text-[10px] text-bone/30">
               Everything here runs in your browser. Nothing was uploaded.
             </p>
           </div>
@@ -70,7 +70,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
           </Button>
         </header>
 
-        <div className="border-b border-edge px-5 py-3">
+        <div className="border-b border-rule px-5 py-3">
           <Segmented
             value={tab}
             onChange={setTab}
@@ -98,11 +98,11 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
                 <CopyButton text={code} label="Copy code" variant="primary" />
               </div>
               <Code>{code}</Code>
-              <p className="font-mono text-[10px] leading-relaxed text-white/35">
+              <p className="font-mono text-[10px] leading-relaxed text-bone/35">
                 Only the props that differ from the{" "}
-                <span className="text-violet">{state.preset}</span> preset are written out, so this
+                <span className="text-bone">{state.preset}</span> preset are written out, so this
                 stays readable. Save it as{" "}
-                <span className="text-white/60">components/ascii-hero.tsx</span>.
+                <span className="text-bone/60">components/ascii-hero.tsx</span>.
               </p>
               {ephemeral && (
                 <Warning>
@@ -138,8 +138,8 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
 
           {tab === "model" && (
             <div className="space-y-4">
-              <p className="font-mono text-[11px] leading-relaxed text-white/50">
-                Download what you forged as a standard <span className="text-violet">.glb</span>. It
+              <p className="font-mono text-[11px] leading-relaxed text-bone/50">
+                Download what you forged as a standard <span className="text-bone">.glb</span>. It
                 opens in Blender, Unity, Godot, or any glTF viewer — this is a real mesh, not a
                 screenshot.
               </p>
@@ -148,16 +148,16 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
                   {exporting ? "Exporting…" : "Download .glb"}
                 </Button>
                 {!object && (
-                  <span className="font-mono text-[10px] text-white/30">
+                  <span className="font-mono text-[10px] text-bone/30">
                     Waiting for the model to finish building…
                   </span>
                 )}
               </div>
               {exportError && <Warning>{exportError}</Warning>}
-              <p className="font-mono text-[10px] leading-relaxed text-white/30">
-                Once downloaded, drop it in <span className="text-white/55">public/models/</span> and
+              <p className="font-mono text-[10px] leading-relaxed text-bone/30">
+                Once downloaded, drop it in <span className="text-bone/55">public/models/</span> and
                 switch the component to{" "}
-                <span className="text-white/55">{`model={{ type: "url", src: "/models/glyphforge-model.glb" }}`}</span>
+                <span className="text-bone/55">{`model={{ type: "url", src: "/models/glyphforge-model.glb" }}`}</span>
                 .
               </p>
             </div>
@@ -167,7 +167,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
             <div className="space-y-4">
               {link ? (
                 <>
-                  <p className="font-mono text-[11px] leading-relaxed text-white/50">
+                  <p className="font-mono text-[11px] leading-relaxed text-bone/50">
                     This link restores every setting on this page. The whole config is encoded in the
                     URL — there's no server holding it.
                   </p>
@@ -176,7 +176,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
                       readOnly
                       value={link}
                       onFocus={(event) => event.target.select()}
-                      className="w-full truncate rounded-md border border-edge bg-ink px-3 py-2 font-mono text-[10px] text-white/60 outline-none"
+                      className="w-full truncate border border-rule bg-ink px-3 py-2 font-mono text-[10px] text-bone/60 outline-none"
                     />
                     <CopyButton text={link} label="Copy link" variant="primary" />
                   </div>
@@ -198,7 +198,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="max-h-80 overflow-auto rounded-lg border border-edge bg-ink p-4 font-mono text-[11px] leading-relaxed text-white/75">
+    <pre className="max-h-80 overflow-auto border border-rule bg-ink p-4 font-mono text-[11px] leading-relaxed text-bone/75">
       <code>{children}</code>
     </pre>
   )
@@ -207,7 +207,7 @@ function Code({ children }: { children: string }) {
 function CommandRow({ command }: { command: string }) {
   return (
     <div className="flex items-center gap-2">
-      <code className="w-full overflow-x-auto whitespace-nowrap rounded-md border border-edge bg-ink px-3 py-2 font-mono text-[10px] text-violet">
+      <code className="w-full overflow-x-auto whitespace-nowrap border border-rule bg-ink px-3 py-2 font-mono text-[10px] text-bone">
         {command}
       </code>
       <CopyButton text={command} />
@@ -228,12 +228,12 @@ function Step({
 }) {
   return (
     <div className="flex gap-3">
-      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-edge-bright font-mono text-[10px] text-white/45">
+      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-rule-bright font-mono text-[10px] text-bone/45">
         {n}
       </span>
       <div className="min-w-0 flex-1 space-y-2">
-        <h3 className="font-mono text-[11px] text-white/80">{title}</h3>
-        <p className="font-mono text-[10px] leading-relaxed text-white/35">{body}</p>
+        <h3 className="font-mono text-[11px] text-bone/80">{title}</h3>
+        <p className="font-mono text-[10px] leading-relaxed text-bone/35">{body}</p>
         {children}
       </div>
     </div>
@@ -242,7 +242,7 @@ function Step({
 
 function Warning({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-md border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] leading-relaxed text-amber/80">
+    <p className="border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] leading-relaxed text-amber/80">
       {children}
     </p>
   )

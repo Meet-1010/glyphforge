@@ -34,13 +34,13 @@ export default function CommunityPage() {
 
       <div className="mx-auto max-w-6xl px-5 py-10">
         <header className="max-w-2xl">
-          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-violet">
+          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-bone">
             Community
           </span>
-          <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="mt-4 text-2xl font-bold text-bone sm:text-3xl">
             Every preview here is running, not a screenshot.
           </h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/55">
+          <p className="mt-3 text-sm leading-relaxed text-bone/55">
             A Glyphforge creation is a small piece of config, not a heavy asset — so a gallery entry
             can rebuild the real thing in your browser. Open any of them in the Studio and keep
             editing from exactly where its author left off.
@@ -66,15 +66,15 @@ export default function CommunityPage() {
           />
 
           {mine.length === 0 ? (
-            <div className="mt-5 rounded-xl border border-dashed border-edge-bright p-10 text-center">
-              <p className="font-mono text-[11px] text-white/40">Nothing saved yet.</p>
-              <p className="mx-auto mt-2 max-w-md font-mono text-[10px] leading-relaxed text-white/25">
+            <div className="mt-5 border border-dashed border-rule-bright p-10 text-center">
+              <p className="font-mono text-[11px] text-bone/40">Nothing saved yet.</p>
+              <p className="mx-auto mt-2 max-w-md font-mono text-[10px] leading-relaxed text-bone/25">
                 Build something in the Studio and hit Save. Creations are stored in this browser
                 only — they don&apos;t sync between devices, and clearing site data clears them.
               </p>
               <Link
                 href="/studio"
-                className="mt-5 inline-block rounded-md bg-violet px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-violet-dim"
+                className="mt-5 inline-block bg-bone px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
               >
                 Open the Studio
               </Link>
@@ -88,9 +88,9 @@ export default function CommunityPage() {
           )}
         </section>
 
-        <section className="mt-16 rounded-xl border border-edge bg-ink-raised p-6">
-          <h2 className="font-mono text-[12px] text-white">Sharing what you make</h2>
-          <div className="mt-3 space-y-3 text-[12px] leading-relaxed text-white/50">
+        <section className="mt-16 border border-rule bg-ink-2 p-6">
+          <h2 className="font-mono text-[12px] text-bone">Sharing what you make</h2>
+          <div className="mt-3 space-y-3 text-[12px] leading-relaxed text-bone/50">
             <p>
               Being straight with you: there is no Glyphforge server, so this page can&apos;t accept
               uploads the way a hosted gallery would. Everything above is either shipped with the
@@ -110,7 +110,7 @@ export default function CommunityPage() {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md bg-violet px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-violet-dim"
+              className="bg-bone px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
             >
               Submit a creation
             </a>
@@ -118,7 +118,7 @@ export default function CommunityPage() {
               href={REPO}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md border border-edge px-4 py-2 font-mono text-[11px] text-white/60 transition-colors hover:border-edge-bright hover:text-white"
+              className="border border-rule px-4 py-2 font-mono text-[11px] text-bone/60 transition-colors hover:border-rule-bright hover:text-bone"
             >
               Repository
             </a>
@@ -131,9 +131,9 @@ export default function CommunityPage() {
 
 function SectionHeading({ title, hint }: { title: string; hint?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-edge pb-3">
-      <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">{title}</h2>
-      {hint && <span className="font-mono text-[10px] text-white/25">{hint}</span>}
+    <div className="flex items-baseline justify-between gap-4 border-b border-rule pb-3">
+      <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-bone/50">{title}</h2>
+      {hint && <span className="font-mono text-[10px] text-bone/25">{hint}</span>}
     </div>
   )
 }
@@ -146,13 +146,13 @@ function CreationCard({ creation, onDelete }: { creation: Creation; onDelete?: (
   useEffect(() => setOrigin(window.location.origin), [])
 
   return (
-    <article className="overflow-hidden rounded-xl border border-edge bg-ink-raised transition-colors hover:border-edge-bright">
-      <LazyPreview config={creation.config} height={200} className="border-b border-edge" />
+    <article className="overflow-hidden border border-rule bg-ink-2 transition-colors hover:border-rule-bright">
+      <LazyPreview config={creation.config} height={200} className="border-b border-rule" />
 
       <div className="space-y-3 p-4">
         <div>
-          <h3 className="truncate font-mono text-[12px] text-white">{creation.title}</h3>
-          <p className="mt-1 font-mono text-[10px] text-white/35">
+          <h3 className="truncate font-mono text-[12px] text-bone">{creation.title}</h3>
+          <p className="mt-1 font-mono text-[10px] text-bone/35">
             {creation.author ?? "You"} · {sourceLabel(creation)}
           </p>
         </div>
@@ -160,7 +160,7 @@ function CreationCard({ creation, onDelete }: { creation: Creation; onDelete?: (
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={studioHref}
-            className="rounded-md bg-violet px-3 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-violet-dim"
+            className="bg-bone px-3 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
           >
             Open in Studio
           </Link>

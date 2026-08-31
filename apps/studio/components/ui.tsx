@@ -24,22 +24,22 @@ export function Collapsible({
   const id = useId()
 
   return (
-    <section className="border-b border-edge last:border-b-0">
+    <section className="border-b border-rule last:border-b-0">
       <button
         type="button"
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-white/[0.02]"
+        className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-bone/[0.02]"
       >
         <span className="flex items-baseline gap-2">
-          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/45">
             {title}
           </span>
-          {hint && <span className="font-mono text-[9px] text-white/25">{hint}</span>}
+          {hint && <span className="font-mono text-[9px] text-bone/25">{hint}</span>}
         </span>
         <span
-          className={`font-mono text-[10px] text-white/30 transition-transform ${open ? "rotate-90" : ""}`}
+          className={`font-mono text-[10px] text-bone/30 transition-transform ${open ? "rotate-90" : ""}`}
           aria-hidden
         >
           &gt;
@@ -64,9 +64,9 @@ export function Panel({
   children: ReactNode
 }) {
   return (
-    <section className="border-b border-edge last:border-b-0">
+    <section className="border-b border-rule last:border-b-0">
       <header className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/40">{title}</h2>
+        <h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-bone/40">{title}</h2>
         {action}
       </header>
       <div className="space-y-3 px-4 pb-4">{children}</div>
@@ -86,8 +86,8 @@ export function Field({
   return (
     <label className="block">
       <div className="mb-1.5 flex items-baseline justify-between gap-2">
-        <span className="font-mono text-[11px] text-white/55">{label}</span>
-        {hint && <span className="font-mono text-[10px] tabular-nums text-white/30">{hint}</span>}
+        <span className="font-mono text-[11px] text-bone/55">{label}</span>
+        {hint && <span className="font-mono text-[10px] tabular-nums text-bone/30">{hint}</span>}
       </div>
       {children}
     </label>
@@ -140,16 +140,16 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between rounded-md px-1 py-1.5 text-left transition-colors hover:bg-white/[0.03]"
+      className="flex w-full items-center justify-between px-1 py-1.5 text-left transition-colors hover:bg-bone/[0.03]"
     >
-      <span className="font-mono text-[11px] text-white/55">{label}</span>
+      <span className="font-mono text-[11px] text-bone/55">{label}</span>
       <span
-        className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-violet" : "bg-edge-bright"
+        className={`relative h-4 w-7 shrink-0  transition-colors ${
+          checked ? "bg-bone" : "bg-rule-bright"
         }`}
       >
         <span
-          className={`absolute top-0.5 h-3 w-3 rounded-full bg-ink transition-transform ${
+          className={`absolute top-0.5 h-3 w-3  bg-ink transition-transform ${
             checked ? "translate-x-3.5" : "translate-x-0.5"
           }`}
         />
@@ -172,18 +172,18 @@ export function Segmented<T extends string>({
   return (
     <div>
       {label && (
-        <div className="mb-1.5 font-mono text-[11px] text-white/55">{label}</div>
+        <div className="mb-1.5 font-mono text-[11px] text-bone/55">{label}</div>
       )}
-      <div className="flex gap-1 rounded-lg border border-edge bg-ink p-1">
+      <div className="flex gap-1 border border-rule bg-ink p-1">
         {options.map((option) => (
           <button
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`flex-1 rounded-md px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+            className={`flex-1  px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
               value === option.value
-                ? "bg-violet text-ink"
-                : "text-white/45 hover:bg-white/5 hover:text-white/70"
+                ? "bg-bone text-ink"
+                : "text-bone/45 hover:bg-bone/5 hover:text-bone/70"
             }`}
           >
             {option.label}
@@ -210,7 +210,7 @@ export function Select<T extends string>({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as T)}
-        className="w-full appearance-none rounded-md border border-edge bg-ink px-3 py-2 font-mono text-[11px] text-white/80 outline-none transition-colors focus:border-violet"
+        className="w-full appearance-none border border-rule bg-ink px-3 py-2 font-mono text-[11px] text-bone/80 outline-none transition-colors focus:border-bone"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value} className="bg-ink">
@@ -236,7 +236,7 @@ export function TextInput({
   multiline?: boolean
 }) {
   const className =
-    "w-full rounded-md border border-edge bg-ink px-3 py-2 font-mono text-[12px] text-white/85 outline-none transition-colors placeholder:text-white/25 focus:border-violet"
+    "w-full  border border-rule bg-ink px-3 py-2 font-mono text-[12px] text-bone/85 outline-none transition-colors placeholder:text-bone/25 focus:border-bone"
   return (
     <Field label={label}>
       {multiline ? (
@@ -276,13 +276,13 @@ export function ColorField({
           type="color"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="h-8 w-10 shrink-0 rounded-md"
+          className="h-8 w-10 shrink-0"
         />
         <input
           type="text"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-md border border-edge bg-ink px-3 py-1.5 font-mono text-[11px] text-white/70 outline-none focus:border-violet"
+          className="w-full border border-rule bg-ink px-3 py-1.5 font-mono text-[11px] text-bone/70 outline-none focus:border-bone"
         />
       </div>
     </Field>
@@ -303,11 +303,11 @@ export function Button({
   title?: string
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 font-mono text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+    "inline-flex items-center justify-center gap-2  px-3 py-2 font-mono text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
   const variants = {
-    default: "border border-edge bg-ink-raised text-white/75 hover:border-edge-bright hover:text-white",
-    primary: "bg-violet text-ink hover:bg-violet-dim",
-    ghost: "text-white/45 hover:bg-white/5 hover:text-white/80",
+    default: "border border-rule bg-ink-2 text-bone/75 hover:border-rule-bright hover:text-bone",
+    primary: "bg-bone text-ink hover:bg-bone-dim",
+    ghost: "text-bone/45 hover:bg-bone/5 hover:text-bone/80",
   }
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title} className={`${base} ${variants[variant]}`}>

@@ -73,30 +73,30 @@ export default function StudioPage() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-ink">
-      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-edge px-4 py-3">
+      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-rule px-4 py-3">
         <div className="flex items-center gap-3">
-          <Link href="/" className="font-mono text-[13px] font-bold tracking-tight text-white">
-            glyph<span className="text-violet">forge</span>
+          <Link href="/" className="font-mono text-[13px] font-bold tracking-tight text-bone">
+            glyph<span className="text-bone">forge</span>
           </Link>
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-white/30 sm:inline">
+          <span className="hidden font-mono text-[10px] uppercase tracking-[0.22em] text-bone/30 sm:inline">
             Studio
           </span>
           <Link
             href="/assets"
-            className="hidden font-mono text-[11px] text-white/40 transition-colors hover:text-white md:inline"
+            className="hidden font-mono text-[11px] text-bone/40 transition-colors hover:text-bone md:inline"
           >
             Assets
           </Link>
           <Link
             href="/community"
-            className="hidden font-mono text-[11px] text-white/40 transition-colors hover:text-white md:inline"
+            className="hidden font-mono text-[11px] text-bone/40 transition-colors hover:text-bone md:inline"
           >
             Community
           </Link>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="hidden font-mono text-[10px] text-white/25 xl:inline">
+          <span className="hidden font-mono text-[10px] text-bone/25 xl:inline">
             drag to rotate · scroll to zoom · shift-drag to pan
           </span>
           <Button onClick={() => setState(DEFAULT_STATE)} variant="ghost">
@@ -110,14 +110,14 @@ export default function StudioPage() {
       </header>
 
       {/* Mobile panel switcher */}
-      <div className="flex shrink-0 gap-1 border-b border-edge p-2 lg:hidden">
+      <div className="flex shrink-0 gap-1 border-b border-rule p-2 lg:hidden">
         {(["source", "look"] as const).map((panel) => (
           <button
             key={panel}
             type="button"
             onClick={() => setMobilePanel(panel)}
-            className={`flex-1 rounded-md px-3 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors ${
-              mobilePanel === panel ? "bg-violet text-ink" : "text-white/45"
+            className={`flex-1  px-3 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+              mobilePanel === panel ? "bg-bone text-ink" : "text-bone/45"
             }`}
           >
             {panel}
@@ -127,7 +127,7 @@ export default function StudioPage() {
 
       <main className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[300px_1fr_300px]">
         <aside
-          className={`min-h-0 overflow-y-auto border-edge lg:border-r lg:block ${
+          className={`min-h-0 overflow-y-auto border-rule lg:border-r lg:block ${
             mobilePanel === "source" ? "block" : "hidden"
           } order-2 lg:order-1`}
         >
@@ -175,10 +175,10 @@ export default function StudioPage() {
           {/* Viewport controls, floated over the canvas rather than buried in a
               side panel — they act on what you are looking at. */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-3">
-            <span className="rounded-md bg-ink/70 px-2 py-1 font-mono text-[9px] leading-relaxed text-white/35 backdrop-blur-sm lg:hidden">
+            <span className="bg-ink/70 px-2 py-1 font-mono text-[9px] leading-relaxed text-bone/35 backdrop-blur-sm lg:hidden">
               drag · pinch to zoom
             </span>
-            <span className="hidden rounded-md bg-ink/70 px-2 py-1 font-mono text-[9px] text-white/35 backdrop-blur-sm lg:inline xl:hidden">
+            <span className="hidden bg-ink/70 px-2 py-1 font-mono text-[9px] text-bone/35 backdrop-blur-sm lg:inline xl:hidden">
               scroll to zoom · shift-drag to pan
             </span>
             <div className="pointer-events-auto ml-auto">
@@ -188,7 +188,7 @@ export default function StudioPage() {
         </div>
 
         <aside
-          className={`min-h-0 overflow-y-auto border-edge lg:border-l lg:block ${
+          className={`min-h-0 overflow-y-auto border-rule lg:border-l lg:block ${
             mobilePanel === "look" ? "block" : "hidden"
           } order-3`}
         >
@@ -245,23 +245,23 @@ function SaveDialog({
       role="presentation"
     >
       <div
-        className="w-full max-w-md rounded-xl border border-edge bg-ink-raised p-5"
+        className="w-full max-w-md border border-rule bg-ink-2 p-5"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Save creation"
       >
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-white/50">Save</h2>
+        <h2 className="font-mono text-[11px] uppercase tracking-[0.22em] text-bone/50">Save</h2>
 
         {saved ? (
           <>
-            <p className="mt-3 font-mono text-[11px] leading-relaxed text-white/55">
+            <p className="mt-3 font-mono text-[11px] leading-relaxed text-bone/55">
               Saved to this browser. It&apos;s on your Community page now.
             </p>
             <div className="mt-4 flex gap-2">
               <Link
                 href="/community"
-                className="rounded-md bg-violet px-3 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-violet-dim"
+                className="bg-bone px-3 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
               >
                 View gallery
               </Link>
@@ -272,7 +272,7 @@ function SaveDialog({
           </>
         ) : (
           <>
-            <p className="mt-2 font-mono text-[10px] leading-relaxed text-white/30">
+            <p className="mt-2 font-mono text-[10px] leading-relaxed text-bone/30">
               Stored in this browser only — nothing is uploaded, and clearing site data clears it.
             </p>
             <input
@@ -283,7 +283,7 @@ function SaveDialog({
                 if (event.key === "Enter") onSave()
                 if (event.key === "Escape") onClose()
               }}
-              className="mt-4 w-full rounded-md border border-edge bg-ink px-3 py-2 font-mono text-[12px] text-white outline-none focus:border-violet"
+              className="mt-4 w-full border border-rule bg-ink px-3 py-2 font-mono text-[12px] text-bone outline-none focus:border-bone"
             />
             <div className="mt-4 flex gap-2">
               <Button variant="primary" onClick={onSave}>

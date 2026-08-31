@@ -69,7 +69,7 @@ export function LazyPreview({
           style={{ minHeight: 0, height: "100%" }}
         />
       ) : (
-        <div className="grid h-full place-items-center font-mono text-[10px] text-white/15">
+        <div className="grid h-full place-items-center font-mono text-[10px] text-bone/15">
           ▚▚▚
         </div>
       )}
