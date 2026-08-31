@@ -70,6 +70,7 @@ repeatedly left the dev server serving a broken module graph.
 
 - **Source** — text, parametric shape, image (flat, relief, or silhouette extrude), SVG, or an uploaded `.glb`
 - **Look** — eight presets, eight glyph ramps, cell size, tint, dithering, transparency, and the full post-fx stack live
+- **Viewport** — scroll or pinch to zoom, shift-drag to pan, drag to rotate, double-click to reset
 - **Export** — copy a paste-ready component, copy the install command, download the model as `.glb`, or share a link that encodes the whole config
 
 Uploads never leave the browser. The share link carries the config in the URL; there's no server storing anything.

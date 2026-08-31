@@ -17,7 +17,7 @@ import { DEFAULT_MODEL } from "../forge"
 import { resolvePreset, type PresetName } from "../presets"
 import { useInView } from "../hooks/use-in-view"
 import { useReducedMotion } from "../hooks/use-reduced-motion"
-import type { AsciiOptions, ModelSource, MotionOptions } from "../types"
+import type { AsciiOptions, ControlOptions, ModelSource, MotionOptions } from "../types"
 
 function supportsWebGL(): boolean {
   if (typeof document === "undefined") return true
@@ -39,6 +39,11 @@ export interface GlyphCanvasProps extends AsciiOptions {
   /** Starting point for the look. Any other prop overrides it. @default "terminal" */
   preset?: PresetName
   motion?: MotionOptions
+  /**
+   * Viewport navigation — scroll/pinch to zoom, shift-drag to pan.
+   * Off by default: a hero that eats the page's scroll reads as broken.
+   */
+  controls?: ControlOptions
   material?: Pick<GlyphModelProps, "color" | "roughness" | "metalness" | "keepMaterials" | "scale">
   /**
    * Camera distance. `"auto"` frames the model in the current viewport, which
@@ -71,6 +76,7 @@ export function GlyphCanvas({
   model = DEFAULT_MODEL,
   preset = "terminal",
   motion,
+  controls,
   material,
   cameraZ = "auto",
   maxDpr = 1.5,
@@ -210,6 +216,7 @@ export function GlyphCanvas({
           reducedMotion={reducedMotion}
           animate={inView}
           cameraZ={cameraZ}
+          controls={controls}
           onReady={handleReady}
           onError={handleError}
         />

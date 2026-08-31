@@ -127,11 +127,45 @@ Built-in ramps: `terminal` `classic` `blocks` `shades` `dots` `binary` `katakana
 | `cameraZ` | `"auto"` | Frames the model for the current viewport. Set a number to pin it |
 | `maxDpr` | `1.5` | Pixel-ratio ceiling |
 | `pauseOffscreen` | `true` | Stop rendering when scrolled out of view |
-| `motion` | | `autoRotate`, `hoverBoost`, `hoverZoom`, `draggable`, `tilt`, `respectReducedMotion` |
+| `motion` | | `autoRotate`, `hoverBoost`, `hoverZoom`, `draggable`, `tilt`, `animation`, `animationSpeed`, `respectReducedMotion` |
+| `controls` | off | Viewport navigation: `zoom`, `pan`, `zoomRange`, `resetToken` |
 | `material` | | `color`, `roughness`, `metalness`, `keepMaterials` |
 | `fallback` / `errorFallback` | | Loading and failure UI |
 
 `cameraZ="auto"` matters more than it sounds: a long word auto-fits to a wide, flat mesh, and a fixed camera distance would render it as an unreadable sliver.
+
+### Camera controls
+
+```tsx
+<GlyphCanvas controls={{ zoom: true, pan: true }} />
+```
+
+Scroll or pinch to zoom, shift/middle/right-drag to pan, double-click to reset.
+Left-drag still rotates the model.
+
+Both are **off by default**, and that default is deliberate: a hero section that
+captures the wheel stops the page scrolling the moment the pointer crosses it,
+which visitors read as the site being broken. Turn them on for editors and
+viewers — the Studio does.
+
+Zoom is a multiplier on the auto-framed distance rather than an absolute
+position, so resizing the window still reframes correctly without discarding
+where the viewer had zoomed to.
+
+### Animation
+
+Embedded glTF clips play automatically:
+
+```tsx
+<GlyphCanvas
+  model={{ type: "url", src: "/models/walk.glb" }}
+  motion={{ animation: "Walk", animationSpeed: 0.8 }}
+/>
+```
+
+`animation` takes `true` (first clip), a clip name, or `false`. Rigged models are
+cloned with `SkeletonUtils`, so skinned meshes keep their own bones. Playback
+stops for `prefers-reduced-motion` and while the hero is offscreen.
 
 ---
 

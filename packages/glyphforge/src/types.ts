@@ -204,6 +204,32 @@ export type ModelSource =
   | ImageModelSource
   | ShapeModelSource
 
+// -- Camera controls ---------------------------------------------------------
+
+export interface ControlOptions {
+  /**
+   * Scroll or pinch to zoom.
+   *
+   * Off by default on purpose: in a hero section, capturing the wheel means the
+   * page stops scrolling when the pointer crosses the canvas, which visitors
+   * read as the page being broken. Turn it on for editors and viewers.
+   * @default false
+   */
+  zoom?: boolean
+  /**
+   * Shift-drag, middle-drag or right-drag to slide the model around the frame.
+   * @default false
+   */
+  pan?: boolean
+  /** Zoom limits, as multipliers of the auto-framed distance. @default [0.3, 5] */
+  zoomRange?: [number, number]
+  /**
+   * Change this number to snap the view back to the framed default. Double
+   * clicking the canvas does the same thing without any wiring.
+   */
+  resetToken?: number
+}
+
 // -- Motion ------------------------------------------------------------------
 
 export interface MotionOptions {

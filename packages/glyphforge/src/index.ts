@@ -53,6 +53,7 @@ export type {
   AsciiOptions,
   AsciiPostFX,
   AsciiStyle,
+  ControlOptions,
   CharacterSet,
   ColorPalette,
   GlyphRampName,

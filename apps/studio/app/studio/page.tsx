@@ -21,6 +21,7 @@ export default function StudioPage() {
   const [saved, setSaved] = useState(false)
   const objectRef = useRef<Object3D | null>(null)
   const [animations, setAnimations] = useState<string[]>([])
+  const [resetToken, setResetToken] = useState(0)
 
   // Read a shared config from the URL. Done here rather than with
   // `useSearchParams` so the page needs no Suspense boundary.
@@ -95,8 +96,8 @@ export default function StudioPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="hidden font-mono text-[10px] text-white/25 lg:inline">
-            drag the canvas to rotate
+          <span className="hidden font-mono text-[10px] text-white/25 xl:inline">
+            drag to rotate · scroll to zoom · shift-drag to pan
           </span>
           <Button onClick={() => setState(DEFAULT_STATE)} variant="ghost">
             Reset
@@ -159,6 +160,7 @@ export default function StudioPage() {
             motion={state.motion}
             material={state.material}
             cameraZ={state.cameraZ}
+            controls={{ zoom: true, pan: true, resetToken }}
             maxDpr={2}
             pauseOffscreen={false}
             style={{ position: "absolute", inset: 0, height: "100%" }}
@@ -169,6 +171,20 @@ export default function StudioPage() {
             }}
             onError={(nextError) => setError(nextError.message)}
           />
+
+          {/* Viewport controls, floated over the canvas rather than buried in a
+              side panel — they act on what you are looking at. */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-3">
+            <span className="rounded-md bg-ink/70 px-2 py-1 font-mono text-[9px] leading-relaxed text-white/35 backdrop-blur-sm lg:hidden">
+              drag · pinch to zoom
+            </span>
+            <span className="hidden rounded-md bg-ink/70 px-2 py-1 font-mono text-[9px] text-white/35 backdrop-blur-sm lg:inline xl:hidden">
+              scroll to zoom · shift-drag to pan
+            </span>
+            <div className="pointer-events-auto ml-auto">
+              <Button onClick={() => setResetToken((token) => token + 1)}>Reset view</Button>
+            </div>
+          </div>
         </div>
 
         <aside
