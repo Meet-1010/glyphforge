@@ -13,7 +13,8 @@
     "dev:lib": "npm run dev --workspace=glyphforge",
     "studio": "npm run dev --workspace=@glyphforge/studio",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "build:static": "npm run build:static --workspace=@glyphforge/studio"
   },
   "engines": {
     "node": ">=18.18"

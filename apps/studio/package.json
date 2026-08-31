@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:static": "GLYPHFORGE_STATIC=1 next build"
   },
   "dependencies": {
     "@react-three/fiber": "^9.0.0",

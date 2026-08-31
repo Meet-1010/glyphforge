@@ -105,6 +105,39 @@ it.
 
 ---
 
+## Deploying
+
+Every route prerenders to static HTML — no API routes, no server actions, no
+runtime data fetching, because the catalogues are queried from the browser. That
+leaves two good options.
+
+**Vercel** (recommended). Import the repo and set **Root Directory** to
+`apps/studio`; it picks up the npm workspace from the root lockfile on its own.
+The static pages are served from the edge, so nothing cold-starts.
+
+**Any static host** — Cloudflare Pages, Netlify, GitHub Pages, a Render static
+site:
+
+```bash
+npm run build:static     # writes apps/studio/out/
+```
+
+Static export is opt-in rather than the default, because `output: "export"`
+forbids ever adding an API route and the community page is written to grow a
+backend later. `trailingSlash` is enabled in that mode so pages land as
+`assets/index.html`; Netlify and Cloudflare resolve the extensionless form
+themselves, but GitHub Pages needs the directory form.
+
+Worth knowing on free tiers: Render's free *web services* sleep after 15 minutes
+and take ~50s to wake, which is rough for a demo linked from a README — use a
+static site there instead. Vercel's Hobby tier is non-commercial under their
+terms.
+
+The one asset to watch is `public/objaverse-index.json` at 1.7 MB, fetched once
+per visitor who opens `/assets`.
+
+---
+
 ## How the text forge works
 
 Browsers don't expose glyph outlines, so there's no direct path from a webfont to a mesh. Glyphforge rasterises the string to a canvas, traces it with marching squares, links the segments into closed loops, simplifies them, and resolves nesting so counters (`O`, `B`, `%`) become real holes rather than solid blobs. Then it extrudes.

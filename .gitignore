@@ -16,3 +16,6 @@ coverage/
 
 # Objaverse path index cache (20MB, refetched on demand)
 .cache/
+
+# static export output
+apps/studio/out/
