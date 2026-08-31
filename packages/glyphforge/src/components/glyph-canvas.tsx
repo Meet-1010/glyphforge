@@ -10,9 +10,9 @@ import {
   type ReactNode,
 } from "react"
 import { Canvas } from "@react-three/fiber"
-import { Vector2, type Object3D } from "three"
+import { Vector2 } from "three"
 import { GlyphScene } from "./glyph-scene"
-import type { GlyphModelProps } from "./glyph-model"
+import type { GlyphModelProps, GlyphModelResult } from "./glyph-model"
 import { DEFAULT_MODEL } from "../forge"
 import { resolvePreset, type PresetName } from "../presets"
 import { useInView } from "../hooks/use-in-view"
@@ -54,7 +54,7 @@ export interface GlyphCanvasProps extends AsciiOptions {
   fallback?: ReactNode
   /** Shown if WebGL is unavailable or the model fails. Defaults to a quiet message. */
   errorFallback?: ReactNode | ((error: Error) => ReactNode)
-  onReady?: (object: Object3D) => void
+  onReady?: (result: GlyphModelResult) => void
   onError?: (error: Error) => void
   className?: string
   style?: CSSProperties
@@ -139,10 +139,10 @@ export function GlyphCanvas({
   }, [resolution, mousePos])
 
   const handleReady = useCallback(
-    (object: Object3D) => {
+    (result: GlyphModelResult) => {
       setReady(true)
       setError(null)
-      onReady?.(object)
+      onReady?.(result)
     },
     [onReady],
   )

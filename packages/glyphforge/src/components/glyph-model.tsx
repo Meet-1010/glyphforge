@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useFrame } from "@react-three/fiber"
 import {
+  AnimationClip,
+  AnimationMixer,
   Box3,
   BufferGeometry,
   Color,
@@ -16,8 +19,59 @@ import {
   type Material,
 } from "three"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
+import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js"
 import { forgeGeometry, isForgeable } from "../forge"
 import type { ModelSource } from "../types"
+
+/** What a finished model hands back to the host. */
+export interface GlyphModelResult {
+  object: Object3D
+  /** Names of embedded glTF animation clips, empty for static models. */
+  animations: string[]
+  /** World-space size after auto-fitting, so the camera can frame it. */
+  size: Vector3
+}
+
+/** Cap the vertex walk so a half-million-poly scene still measures instantly. */
+const MEASURE_BUDGET = 120_000
+
+/**
+ * Measure an object from its actual vertex positions.
+ *
+ * `Box3.setFromObject` goes through `geometry.boundingBox`, which three.js
+ * expands by every morph target's extents — the Flamingo's flap targets inflate
+ * it by ~1.5x, so fitting against it silently shrinks the model by a third.
+ * Walking POSITION directly measures the rest pose, which is what the viewer
+ * actually sees.
+ */
+export function measureObject(object: Object3D): Box3 {
+  object.updateWorldMatrix(false, true)
+
+  let total = 0
+  object.traverse((child) => {
+    const mesh = child as Mesh
+    if (mesh.isMesh && mesh.geometry?.attributes?.position) {
+      total += mesh.geometry.attributes.position.count
+    }
+  })
+
+  const stride = Math.max(1, Math.ceil(total / MEASURE_BUDGET))
+  const box = new Box3()
+  const vertex = new Vector3()
+
+  object.traverse((child) => {
+    const mesh = child as Mesh
+    const position = mesh.geometry?.attributes?.position
+    if (!mesh.isMesh || !position) return
+    for (let i = 0; i < position.count; i += stride) {
+      box.expandByPoint(vertex.fromBufferAttribute(position, i).applyMatrix4(mesh.matrixWorld))
+    }
+  })
+
+  // Sampling can clip the extremes slightly; a touch of padding covers it.
+  if (stride > 1 && !box.isEmpty()) box.expandByScalar(box.getSize(vertex).length() * 0.01)
+  return box.isEmpty() ? new Box3().setFromObject(object) : box
+}
 
 /**
  * Scale and centre any object into a 2-unit box.
@@ -25,9 +79,9 @@ import type { ModelSource } from "../types"
  * Upstream made you hand-tune `scale={8}` per model and re-guess after every
  * swap. Auto-fitting means a `.glb` from any source frames correctly on drop.
  */
-export function fitObject(object: Object3D, targetSize = 2) {
-  const box = new Box3().setFromObject(object)
-  if (box.isEmpty()) return
+export function fitObject(object: Object3D, targetSize = 2): Vector3 {
+  const box = measureObject(object)
+  if (box.isEmpty()) return new Vector3(targetSize, targetSize, targetSize)
 
   const size = box.getSize(new Vector3())
   const center = box.getCenter(new Vector3())
@@ -37,18 +91,25 @@ export function fitObject(object: Object3D, targetSize = 2) {
   object.position.sub(center)
   object.position.multiplyScalar(scale)
   object.scale.setScalar(scale)
+
+  return size.multiplyScalar(scale)
 }
 
-const gltfCache = new Map<string, Promise<Object3D>>()
+interface LoadedGltf {
+  scene: Object3D
+  animations: AnimationClip[]
+}
 
-function loadGltf(src: string): Promise<Object3D> {
+const gltfCache = new Map<string, Promise<LoadedGltf>>()
+
+function loadGltf(src: string): Promise<LoadedGltf> {
   const cached = gltfCache.get(src)
   if (cached) return cached
 
-  const promise = new Promise<Object3D>((resolve, reject) => {
+  const promise = new Promise<LoadedGltf>((resolve, reject) => {
     new GLTFLoader().load(
       src,
-      (gltf) => resolve(gltf.scene),
+      (gltf) => resolve({ scene: gltf.scene, animations: gltf.animations ?? [] }),
       undefined,
       () => reject(new Error(`glyphforge: failed to load model "${src}"`)),
     )
@@ -71,7 +132,13 @@ export interface GlyphModelProps {
   keepMaterials?: boolean
   /** Extra uniform scale applied after auto-fit. @default 1 */
   scale?: number
-  onReady?: (object: Object3D) => void
+  /** `true` plays the first embedded clip, a string picks one by name. @default true */
+  animation?: boolean | string
+  /** Playback speed multiplier. @default 1 */
+  animationSpeed?: number
+  /** Freeze playback (reduced motion, or scrolled offscreen). @default false */
+  paused?: boolean
+  onReady?: (result: GlyphModelResult) => void
   onError?: (error: Error) => void
 }
 
@@ -82,12 +149,17 @@ export function GlyphModel({
   metalness = 0,
   keepMaterials = false,
   scale = 1,
+  animation = true,
+  animationSpeed = 1,
+  paused = false,
   onReady,
   onError,
 }: GlyphModelProps) {
   const groupRef = useRef<Group>(null)
   const [object, setObject] = useState<Object3D | null>(null)
+  const [clips, setClips] = useState<AnimationClip[]>([])
   const [map, setMap] = useState<Texture | null>(null)
+  const mixerRef = useRef<AnimationMixer | null>(null)
 
   const toneStrength = source.type === "image" ? (source.toneStrength ?? 0.85) : 0.85
 
@@ -134,14 +206,17 @@ export function GlyphModel({
     async function build() {
       try {
         let next: Object3D
+        let nextClips: AnimationClip[] = []
 
         if (source.type === "url") {
           if (!source.src) throw new Error("glyphforge: no model file chosen yet")
-          const scene = await loadGltf(source.src)
+          const gltf = await loadGltf(source.src)
           if (cancelled) return
-          // The cache hands out one instance; clone so several heroes can
-          // show the same URL without fighting over transforms.
-          next = scene.clone(true)
+          // SkeletonUtils.clone, not Object3D.clone: a plain clone leaves
+          // SkinnedMeshes pointing at the original's bones, so an animated
+          // model either freezes or tears itself apart.
+          next = cloneSkinned(gltf.scene)
+          nextClips = gltf.animations
         } else if (isForgeable(source)) {
           const geometry = await forgeGeometry(source)
           if (cancelled) {
@@ -156,12 +231,13 @@ export function GlyphModel({
           throw new Error("glyphforge: unsupported model source")
         }
 
-        fitObject(next)
+        const size = fitObject(next)
         if (cancelled) return
 
         setMap(ownedTexture)
+        setClips(nextClips)
         setObject(next)
-        onReady?.(next)
+        onReady?.({ object: next, animations: nextClips.map((clip) => clip.name), size })
       } catch (error) {
         if (cancelled) return
         const err = error instanceof Error ? error : new Error(String(error))
@@ -178,6 +254,7 @@ export function GlyphModel({
       ownedGeometry?.dispose()
       ownedTexture?.dispose()
       setMap(null)
+      setClips([])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceKey])
@@ -192,6 +269,33 @@ export function GlyphModel({
   }, [object, material, keepMaterials])
 
   useEffect(() => () => material.dispose(), [material])
+
+  // Embedded glTF animation.
+  useEffect(() => {
+    if (!object || clips.length === 0 || animation === false) return
+
+    const clip =
+      typeof animation === "string"
+        ? (AnimationClip.findByName(clips, animation) ?? clips[0])
+        : clips[0]
+    if (!clip) return
+
+    const mixer = new AnimationMixer(object)
+    mixer.clipAction(clip).play()
+    mixerRef.current = mixer
+
+    return () => {
+      mixer.stopAllAction()
+      mixer.uncacheRoot(object)
+      mixerRef.current = null
+    }
+  }, [object, clips, animation])
+
+  useFrame((_, delta) => {
+    if (paused) return
+    // Clamp so returning to a backgrounded tab does not fast-forward the clip.
+    mixerRef.current?.update(Math.min(delta, 0.1) * animationSpeed)
+  })
 
   if (!object) return null
 

@@ -218,8 +218,17 @@ export interface MotionOptions {
   /** Resting tilt, in radians: `[x, z]`. @default [0.3, -0.08] */
   tilt?: [number, number]
   /**
+   * Play animation clips embedded in a `.glb`. `true` plays the first clip, a
+   * string picks one by name, `false` leaves the model in its bind pose.
+   * @default true
+   */
+  animation?: boolean | string
+  /** Animation playback speed multiplier. @default 1 */
+  animationSpeed?: number
+  /**
    * Honour `prefers-reduced-motion`. When the user has asked for reduced motion,
-   * auto-rotation and time-based post-fx stop; dragging still works.
+   * auto-rotation, embedded animation and time-based post-fx stop; dragging
+   * still works.
    * @default true
    */
   respectReducedMotion?: boolean

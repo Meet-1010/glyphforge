@@ -9,7 +9,13 @@
 export { GlyphHero, type GlyphHeroProps } from "./components/glyph-hero"
 export { GlyphCanvas, type GlyphCanvasProps } from "./components/glyph-canvas"
 export { GlyphScene, type GlyphSceneProps } from "./components/glyph-scene"
-export { GlyphModel, fitObject, disposeObject, type GlyphModelProps } from "./components/glyph-model"
+export {
+  GlyphModel,
+  fitObject,
+  disposeObject,
+  type GlyphModelProps,
+  type GlyphModelResult,
+} from "./components/glyph-model"
 
 // Effect
 export { AsciiEffect, type AsciiEffectProps } from "./effects/ascii-effect"

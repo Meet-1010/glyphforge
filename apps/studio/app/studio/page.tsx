@@ -20,6 +20,7 @@ export default function StudioPage() {
   const [saveTitle, setSaveTitle] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const objectRef = useRef<Object3D | null>(null)
+  const [animations, setAnimations] = useState<string[]>([])
 
   // Read a shared config from the URL. Done here rather than with
   // `useSearchParams` so the page needs no Suspense boundary.
@@ -161,8 +162,9 @@ export default function StudioPage() {
             maxDpr={2}
             pauseOffscreen={false}
             style={{ position: "absolute", inset: 0, height: "100%" }}
-            onReady={(object) => {
+            onReady={({ object, animations: clips }) => {
               objectRef.current = object
+              setAnimations(clips)
               setError(null)
             }}
             onError={(nextError) => setError(nextError.message)}
@@ -174,7 +176,7 @@ export default function StudioPage() {
             mobilePanel === "look" ? "block" : "hidden"
           } order-3`}
         >
-          <LookPanel state={state} onChange={patch} />
+          <LookPanel state={state} onChange={patch} animations={animations} />
         </aside>
       </main>
 

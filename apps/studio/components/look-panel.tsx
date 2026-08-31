@@ -1,9 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { PRESET_NAMES, PRESETS, type PresetName } from "glyphforge"
 import type { AsciiPostFX } from "glyphforge"
 import type { StudioState } from "../lib/config"
-import { ColorField, Field, Panel, Segmented, Select, Slider, Toggle } from "./ui"
+import { Collapsible, ColorField, Panel, Segmented, Select, Slider, Toggle } from "./ui"
 
 const RAMPS = [
   { value: "terminal", label: "Terminal" },
@@ -39,11 +40,24 @@ const PRESET_BLURBS: Record<PresetName, string> = {
 export interface LookPanelProps {
   state: StudioState
   onChange: (patch: Partial<StudioState>) => void
+  /** Clip names on the loaded model, empty when it has no animation. */
+  animations: string[]
 }
 
-export function LookPanel({ state, onChange }: LookPanelProps) {
-  const setFx = (patch: Partial<AsciiPostFX>) =>
-    onChange({ postfx: { ...state.postfx, ...patch } })
+/**
+ * The look controls.
+ *
+ * Everything the shader supports is here, but "Basic" shows only the handful of
+ * settings that change a hero's character — preset, ramp, size, colour. The
+ * rest lives under "All", grouped and collapsed, so the full surface is one
+ * click away rather than forty controls deep on arrival.
+ */
+export function LookPanel({ state, onChange, animations }: LookPanelProps) {
+  const [mode, setMode] = useState<"basic" | "all">("basic")
+
+  const setFx = (patch: Partial<AsciiPostFX>) => onChange({ postfx: { ...state.postfx, ...patch } })
+  const setMotion = (patch: Partial<StudioState["motion"]>) =>
+    onChange({ motion: { ...state.motion, ...patch } })
 
   /** Applying a preset replaces the look wholesale — that's what makes it a preset. */
   const applyPreset = (preset: PresetName) => {
@@ -64,6 +78,17 @@ export function LookPanel({ state, onChange }: LookPanelProps) {
 
   return (
     <>
+      <div className="sticky top-0 z-10 border-b border-edge bg-ink px-4 py-3">
+        <Segmented
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "basic", label: "Basic" },
+            { value: "all", label: "All settings" },
+          ]}
+        />
+      </div>
+
       <Panel title="Preset">
         <div className="grid grid-cols-2 gap-1.5">
           {PRESET_NAMES.map((name) => (
@@ -87,291 +112,390 @@ export function LookPanel({ state, onChange }: LookPanelProps) {
         </p>
       </Panel>
 
-      <Panel title="Glyphs">
-        <Select
-          label="Character ramp"
-          value={state.characterSet}
-          options={RAMPS}
-          onChange={(characterSet) => onChange({ characterSet })}
-        />
-        {state.characterSet === "procedural" && (
-          <Segmented
-            label="Procedural style"
-            value={state.glyphStyle}
-            options={[
-              { value: "standard", label: "Std" },
-              { value: "dense", label: "Dense" },
-              { value: "minimal", label: "Min" },
-              { value: "blocks", label: "Blocks" },
-            ]}
-            onChange={(glyphStyle) => onChange({ glyphStyle })}
+      {mode === "basic" ? (
+        <Panel title="Adjust">
+          <Select
+            label="Character ramp"
+            value={state.characterSet}
+            options={RAMPS}
+            onChange={(characterSet) => onChange({ characterSet })}
           />
-        )}
-        <Slider
-          label="Cell size"
-          min={4}
-          max={28}
-          step={1}
-          value={state.cellSize}
-          format={(v) => `${Math.round(v)}px`}
-          onChange={(cellSize) => onChange({ cellSize })}
-        />
-        <Toggle label="Invert brightness" checked={state.invert} onChange={(invert) => onChange({ invert })} />
-        <Toggle label="Colour" checked={state.color} onChange={(color) => onChange({ color })} />
-        <Toggle
-          label="Volume shading"
-          checked={state.volumeShading}
-          onChange={(volumeShading) => onChange({ volumeShading })}
-        />
-      </Panel>
-
-      <Panel title="Colour">
-        <Toggle
-          label="Flat tint"
-          checked={state.useTint}
-          onChange={(useTint) => onChange({ useTint })}
-        />
-        {state.useTint && (
-          <ColorField label="Tint" value={state.tint} onChange={(tint) => onChange({ tint })} />
-        )}
-        <Toggle
-          label="Transparent background"
-          checked={state.transparent}
-          onChange={(transparent) => onChange({ transparent })}
-        />
-        {!state.transparent && (
-          <ColorField
-            label="Background"
-            value={state.backgroundColor}
-            onChange={(backgroundColor) => onChange({ backgroundColor })}
+          <Slider
+            label="Character size"
+            min={4}
+            max={28}
+            step={1}
+            value={state.cellSize}
+            format={(v) => `${Math.round(v)}px`}
+            onChange={(cellSize) => onChange({ cellSize })}
           />
-        )}
-        <Select
-          label="CRT palette"
-          value={state.postfx.colorPalette ?? "none"}
-          options={PALETTES}
-          onChange={(colorPalette) => setFx({ colorPalette: colorPalette as AsciiPostFX["colorPalette"] })}
-        />
-        <p className="font-mono text-[10px] leading-relaxed text-white/30">
-          Transparent mode drops the background entirely so the hero composites over whatever your
-          page already has behind it.
-        </p>
-      </Panel>
-
-      <Panel title="Grade">
-        <Slider
-          label="Contrast"
-          min={0.5}
-          max={3.5}
-          step={0.05}
-          value={state.postfx.contrastAdjust ?? 1}
-          onChange={(contrastAdjust) => setFx({ contrastAdjust })}
-        />
-        <Slider
-          label="Brightness"
-          min={-0.5}
-          max={0.5}
-          step={0.01}
-          value={state.postfx.brightnessAdjust ?? 0}
-          onChange={(brightnessAdjust) => setFx({ brightnessAdjust })}
-        />
-        <Slider
-          label="Dither"
-          min={0}
-          max={2}
-          step={0.05}
-          value={state.postfx.dither ?? 0}
-          onChange={(dither) => setFx({ dither })}
-        />
-        <p className="font-mono text-[10px] leading-relaxed text-white/30">
-          Dithering recovers gradients that the glyph ramp would otherwise band into flat steps.
-          Turn it up for photographs, leave it at zero for hard-edged logos.
-        </p>
-      </Panel>
-
-      <Panel title="CRT">
-        <Slider
-          label="Scanlines"
-          min={0}
-          max={1}
-          step={0.01}
-          value={state.postfx.scanlineIntensity ?? 0}
-          onChange={(scanlineIntensity) => setFx({ scanlineIntensity })}
-        />
-        <Slider
-          label="Scanline count"
-          min={60}
-          max={600}
-          step={10}
-          value={state.postfx.scanlineCount ?? 200}
-          format={(v) => String(Math.round(v))}
-          onChange={(scanlineCount) => setFx({ scanlineCount })}
-        />
-        <Slider
-          label="Curvature"
-          min={0}
-          max={0.4}
-          step={0.005}
-          value={state.postfx.curvature ?? 0}
-          onChange={(curvature) => setFx({ curvature })}
-        />
-        <Slider
-          label="Vignette"
-          min={0}
-          max={1}
-          step={0.01}
-          value={state.postfx.vignetteIntensity ?? 0}
-          onChange={(vignetteIntensity) => setFx({ vignetteIntensity })}
-        />
-        <Slider
-          label="Frame rate lock"
-          min={0}
-          max={60}
-          step={1}
-          value={state.postfx.targetFPS ?? 0}
-          format={(v) => (v === 0 ? "smooth" : `${Math.round(v)} fps`)}
-          onChange={(targetFPS) => setFx({ targetFPS })}
-        />
-      </Panel>
-
-      <Panel title="Distortion">
-        <Slider
-          label="RGB split"
-          min={0}
-          max={0.02}
-          step={0.0005}
-          value={state.postfx.aberrationStrength ?? 0}
-          format={(v) => v.toFixed(4)}
-          onChange={(aberrationStrength) => setFx({ aberrationStrength })}
-        />
-        <Slider
-          label="Glitch"
-          min={0}
-          max={0.4}
-          step={0.005}
-          value={state.postfx.glitchIntensity ?? 0}
-          onChange={(glitchIntensity) => setFx({ glitchIntensity })}
-        />
-        <Slider
-          label="Glitch rate"
-          min={0}
-          max={30}
-          step={1}
-          value={state.postfx.glitchFrequency ?? 0}
-          format={(v) => `${Math.round(v)}/s`}
-          onChange={(glitchFrequency) => setFx({ glitchFrequency })}
-        />
-        <Slider
-          label="Jitter"
-          min={0}
-          max={2}
-          step={0.01}
-          value={state.postfx.jitterIntensity ?? 0}
-          onChange={(jitterIntensity) => setFx({ jitterIntensity })}
-        />
-        <Slider
-          label="Grain"
-          min={0}
-          max={0.4}
-          step={0.005}
-          value={state.postfx.noiseIntensity ?? 0}
-          onChange={(noiseIntensity) => setFx({ noiseIntensity })}
-        />
-        <Slider
-          label="Wave"
-          min={0}
-          max={0.06}
-          step={0.001}
-          value={state.postfx.waveAmplitude ?? 0}
-          format={(v) => v.toFixed(3)}
-          onChange={(waveAmplitude) => setFx({ waveAmplitude })}
-        />
-      </Panel>
-
-      <Panel title="Glow">
-        <Toggle
-          label="Follow pointer"
-          checked={state.postfx.mouseGlowEnabled ?? false}
-          onChange={(mouseGlowEnabled) => setFx({ mouseGlowEnabled })}
-        />
-        {state.postfx.mouseGlowEnabled && (
-          <>
+          {state.useTint && (
+            <ColorField label="Colour" value={state.tint} onChange={(tint) => onChange({ tint })} />
+          )}
+          {!state.transparent && (
+            <ColorField
+              label="Background"
+              value={state.backgroundColor}
+              onChange={(backgroundColor) => onChange({ backgroundColor })}
+            />
+          )}
+          <Slider
+            label="Contrast"
+            min={0.5}
+            max={3.5}
+            step={0.05}
+            value={state.postfx.contrastAdjust ?? 1}
+            onChange={(contrastAdjust) => setFx({ contrastAdjust })}
+          />
+          <Slider
+            label="Spin speed"
+            min={0}
+            max={2}
+            step={0.05}
+            value={state.motion.autoRotate ?? 0.4}
+            onChange={(autoRotate) => setMotion({ autoRotate })}
+          />
+          {animations.length > 0 && (
+            <Toggle
+              label="Play animation"
+              checked={state.motion.animation !== false}
+              onChange={(on) => setMotion({ animation: on })}
+            />
+          )}
+          <p className="pt-1 font-mono text-[10px] leading-relaxed text-white/30">
+            Switch to <span className="text-white/50">All settings</span> for scanlines, glitch,
+            curvature, dithering and the rest.
+          </p>
+        </Panel>
+      ) : (
+        <>
+          <Collapsible title="Glyphs" defaultOpen hint={`${state.cellSize}px`}>
+            <Select
+              label="Character ramp"
+              value={state.characterSet}
+              options={RAMPS}
+              onChange={(characterSet) => onChange({ characterSet })}
+            />
+            {state.characterSet === "procedural" && (
+              <Segmented
+                label="Procedural style"
+                value={state.glyphStyle}
+                options={[
+                  { value: "standard", label: "Std" },
+                  { value: "dense", label: "Dense" },
+                  { value: "minimal", label: "Min" },
+                  { value: "blocks", label: "Blocks" },
+                ]}
+                onChange={(glyphStyle) => onChange({ glyphStyle })}
+              />
+            )}
             <Slider
-              label="Radius"
-              min={40}
-              max={600}
-              step={10}
-              value={state.postfx.mouseGlowRadius ?? 200}
+              label="Cell size"
+              min={4}
+              max={28}
+              step={1}
+              value={state.cellSize}
               format={(v) => `${Math.round(v)}px`}
-              onChange={(mouseGlowRadius) => setFx({ mouseGlowRadius })}
+              onChange={(cellSize) => onChange({ cellSize })}
+            />
+            <Toggle
+              label="Invert brightness"
+              checked={state.invert}
+              onChange={(invert) => onChange({ invert })}
+            />
+            <Toggle label="Colour" checked={state.color} onChange={(color) => onChange({ color })} />
+            <Toggle
+              label="Volume shading"
+              checked={state.volumeShading}
+              onChange={(volumeShading) => onChange({ volumeShading })}
+            />
+          </Collapsible>
+
+          <Collapsible title="Colour" hint={state.useTint ? state.tint : "scene"}>
+            <Toggle
+              label="Flat tint"
+              checked={state.useTint}
+              onChange={(useTint) => onChange({ useTint })}
+            />
+            {state.useTint && (
+              <ColorField label="Tint" value={state.tint} onChange={(tint) => onChange({ tint })} />
+            )}
+            <Toggle
+              label="Transparent background"
+              checked={state.transparent}
+              onChange={(transparent) => onChange({ transparent })}
+            />
+            {!state.transparent && (
+              <ColorField
+                label="Background"
+                value={state.backgroundColor}
+                onChange={(backgroundColor) => onChange({ backgroundColor })}
+              />
+            )}
+            <Select
+              label="CRT palette"
+              value={state.postfx.colorPalette ?? "none"}
+              options={PALETTES}
+              onChange={(colorPalette) =>
+                setFx({ colorPalette: colorPalette as AsciiPostFX["colorPalette"] })
+              }
+            />
+            <p className="font-mono text-[10px] leading-relaxed text-white/30">
+              Transparent mode drops the background so the hero composites over whatever your page
+              already has behind it.
+            </p>
+          </Collapsible>
+
+          <Collapsible title="Grade">
+            <Slider
+              label="Contrast"
+              min={0.5}
+              max={3.5}
+              step={0.05}
+              value={state.postfx.contrastAdjust ?? 1}
+              onChange={(contrastAdjust) => setFx({ contrastAdjust })}
             />
             <Slider
-              label="Intensity"
+              label="Brightness"
+              min={-0.5}
+              max={0.5}
+              step={0.01}
+              value={state.postfx.brightnessAdjust ?? 0}
+              onChange={(brightnessAdjust) => setFx({ brightnessAdjust })}
+            />
+            <Slider
+              label="Dither"
               min={0}
               max={2}
               step={0.05}
-              value={state.postfx.mouseGlowIntensity ?? 1.5}
-              onChange={(mouseGlowIntensity) => setFx({ mouseGlowIntensity })}
+              value={state.postfx.dither ?? 0}
+              onChange={(dither) => setFx({ dither })}
             />
-          </>
-        )}
-      </Panel>
+            <p className="font-mono text-[10px] leading-relaxed text-white/30">
+              Dithering recovers gradients the glyph ramp would otherwise band into flat steps. Turn
+              it up for photographs, leave it at zero for hard-edged logos.
+            </p>
+          </Collapsible>
 
-      <Panel title="Motion">
-        <Slider
-          label="Spin speed"
-          min={0}
-          max={2}
-          step={0.05}
-          value={state.motion.autoRotate ?? 0.4}
-          onChange={(autoRotate) => onChange({ motion: { ...state.motion, autoRotate } })}
-        />
-        <Slider
-          label="Hover boost"
-          min={1}
-          max={6}
-          step={0.1}
-          value={state.motion.hoverBoost ?? 2}
-          format={(v) => `${v.toFixed(1)}x`}
-          onChange={(hoverBoost) => onChange({ motion: { ...state.motion, hoverBoost } })}
-        />
-        <Slider
-          label="Hover zoom"
-          min={1}
-          max={2}
-          step={0.01}
-          value={state.motion.hoverZoom ?? 1.1}
-          format={(v) => `${v.toFixed(2)}x`}
-          onChange={(hoverZoom) => onChange({ motion: { ...state.motion, hoverZoom } })}
-        />
-        <Toggle
-          label="Auto-frame camera"
-          checked={state.cameraZ === "auto"}
-          onChange={(auto) => onChange({ cameraZ: auto ? "auto" : 4.5 })}
-        />
-        {state.cameraZ !== "auto" && (
-          <Slider
-            label="Camera distance"
-            min={2.5}
-            max={9}
-            step={0.1}
-            value={state.cameraZ}
-            onChange={(cameraZ) => onChange({ cameraZ })}
-          />
-        )}
-        <Toggle
-          label="Drag to rotate"
-          checked={state.motion.draggable ?? true}
-          onChange={(draggable) => onChange({ motion: { ...state.motion, draggable } })}
-        />
-        <Field label="Accessibility">
-          <p className="font-mono text-[10px] leading-relaxed text-white/30">
-            Auto-rotation and time-based effects stop automatically for visitors with
-            <span className="text-white/50"> prefers-reduced-motion</span> set. Rendering also pauses
-            when the hero scrolls out of view.
-          </p>
-        </Field>
-      </Panel>
+          <Collapsible title="CRT">
+            <Slider
+              label="Scanlines"
+              min={0}
+              max={1}
+              step={0.01}
+              value={state.postfx.scanlineIntensity ?? 0}
+              onChange={(scanlineIntensity) => setFx({ scanlineIntensity })}
+            />
+            <Slider
+              label="Scanline count"
+              min={60}
+              max={600}
+              step={10}
+              value={state.postfx.scanlineCount ?? 200}
+              format={(v) => String(Math.round(v))}
+              onChange={(scanlineCount) => setFx({ scanlineCount })}
+            />
+            <Slider
+              label="Curvature"
+              min={0}
+              max={0.4}
+              step={0.005}
+              value={state.postfx.curvature ?? 0}
+              onChange={(curvature) => setFx({ curvature })}
+            />
+            <Slider
+              label="Vignette"
+              min={0}
+              max={1}
+              step={0.01}
+              value={state.postfx.vignetteIntensity ?? 0}
+              onChange={(vignetteIntensity) => setFx({ vignetteIntensity })}
+            />
+            <Slider
+              label="Frame rate lock"
+              min={0}
+              max={60}
+              step={1}
+              value={state.postfx.targetFPS ?? 0}
+              format={(v) => (v === 0 ? "smooth" : `${Math.round(v)} fps`)}
+              onChange={(targetFPS) => setFx({ targetFPS })}
+            />
+          </Collapsible>
+
+          <Collapsible title="Distortion">
+            <Slider
+              label="RGB split"
+              min={0}
+              max={0.02}
+              step={0.0005}
+              value={state.postfx.aberrationStrength ?? 0}
+              format={(v) => v.toFixed(4)}
+              onChange={(aberrationStrength) => setFx({ aberrationStrength })}
+            />
+            <Slider
+              label="Glitch"
+              min={0}
+              max={0.4}
+              step={0.005}
+              value={state.postfx.glitchIntensity ?? 0}
+              onChange={(glitchIntensity) => setFx({ glitchIntensity })}
+            />
+            <Slider
+              label="Glitch rate"
+              min={0}
+              max={30}
+              step={1}
+              value={state.postfx.glitchFrequency ?? 0}
+              format={(v) => `${Math.round(v)}/s`}
+              onChange={(glitchFrequency) => setFx({ glitchFrequency })}
+            />
+            <Slider
+              label="Jitter"
+              min={0}
+              max={2}
+              step={0.01}
+              value={state.postfx.jitterIntensity ?? 0}
+              onChange={(jitterIntensity) => setFx({ jitterIntensity })}
+            />
+            <Slider
+              label="Grain"
+              min={0}
+              max={0.4}
+              step={0.005}
+              value={state.postfx.noiseIntensity ?? 0}
+              onChange={(noiseIntensity) => setFx({ noiseIntensity })}
+            />
+            <Slider
+              label="Wave"
+              min={0}
+              max={0.06}
+              step={0.001}
+              value={state.postfx.waveAmplitude ?? 0}
+              format={(v) => v.toFixed(3)}
+              onChange={(waveAmplitude) => setFx({ waveAmplitude })}
+            />
+          </Collapsible>
+
+          <Collapsible title="Glow">
+            <Toggle
+              label="Follow pointer"
+              checked={state.postfx.mouseGlowEnabled ?? false}
+              onChange={(mouseGlowEnabled) => setFx({ mouseGlowEnabled })}
+            />
+            {state.postfx.mouseGlowEnabled && (
+              <>
+                <Slider
+                  label="Radius"
+                  min={40}
+                  max={600}
+                  step={10}
+                  value={state.postfx.mouseGlowRadius ?? 200}
+                  format={(v) => `${Math.round(v)}px`}
+                  onChange={(mouseGlowRadius) => setFx({ mouseGlowRadius })}
+                />
+                <Slider
+                  label="Intensity"
+                  min={0}
+                  max={2}
+                  step={0.05}
+                  value={state.postfx.mouseGlowIntensity ?? 1.5}
+                  onChange={(mouseGlowIntensity) => setFx({ mouseGlowIntensity })}
+                />
+              </>
+            )}
+          </Collapsible>
+
+          <Collapsible
+            title="Motion"
+            defaultOpen={animations.length > 0}
+            hint={animations.length > 0 ? `${animations.length} clip${animations.length === 1 ? "" : "s"}` : undefined}
+          >
+            {animations.length > 0 && (
+              <>
+                <Toggle
+                  label="Play animation"
+                  checked={state.motion.animation !== false}
+                  onChange={(on) => setMotion({ animation: on })}
+                />
+                {state.motion.animation !== false && animations.length > 1 && (
+                  <Select
+                    label="Clip"
+                    value={
+                      typeof state.motion.animation === "string"
+                        ? state.motion.animation
+                        : animations[0]
+                    }
+                    options={animations.map((name) => ({ value: name, label: name }))}
+                    onChange={(animation) => setMotion({ animation })}
+                  />
+                )}
+                {state.motion.animation !== false && (
+                  <Slider
+                    label="Animation speed"
+                    min={0.1}
+                    max={3}
+                    step={0.05}
+                    value={state.motion.animationSpeed ?? 1}
+                    format={(v) => `${v.toFixed(2)}x`}
+                    onChange={(animationSpeed) => setMotion({ animationSpeed })}
+                  />
+                )}
+              </>
+            )}
+            <Slider
+              label="Spin speed"
+              min={0}
+              max={2}
+              step={0.05}
+              value={state.motion.autoRotate ?? 0.4}
+              onChange={(autoRotate) => setMotion({ autoRotate })}
+            />
+            <Slider
+              label="Hover boost"
+              min={1}
+              max={6}
+              step={0.1}
+              value={state.motion.hoverBoost ?? 2}
+              format={(v) => `${v.toFixed(1)}x`}
+              onChange={(hoverBoost) => setMotion({ hoverBoost })}
+            />
+            <Slider
+              label="Hover zoom"
+              min={1}
+              max={2}
+              step={0.01}
+              value={state.motion.hoverZoom ?? 1.1}
+              format={(v) => `${v.toFixed(2)}x`}
+              onChange={(hoverZoom) => setMotion({ hoverZoom })}
+            />
+            <Toggle
+              label="Auto-frame camera"
+              checked={state.cameraZ === "auto"}
+              onChange={(auto) => onChange({ cameraZ: auto ? "auto" : 4.5 })}
+            />
+            {state.cameraZ !== "auto" && (
+              <Slider
+                label="Camera distance"
+                min={2.5}
+                max={9}
+                step={0.1}
+                value={state.cameraZ}
+                onChange={(cameraZ) => onChange({ cameraZ })}
+              />
+            )}
+            <Toggle
+              label="Drag to rotate"
+              checked={state.motion.draggable ?? true}
+              onChange={(draggable) => setMotion({ draggable })}
+            />
+            <p className="font-mono text-[10px] leading-relaxed text-white/30">
+              Rotation, animation and time-based effects stop automatically for visitors with
+              <span className="text-white/50"> prefers-reduced-motion</span> set, and rendering
+              pauses when the hero scrolls out of view.
+            </p>
+          </Collapsible>
+        </>
+      )}
     </>
   )
 }

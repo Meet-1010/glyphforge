@@ -2,7 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SHAPE_KINDS, type ModelSource, type ShapeKind } from "glyphforge"
-import { Button, ColorField, Field, Panel, Segmented, Select, Slider, TextInput, Toggle } from "./ui"
+import {
+  Button,
+  Collapsible,
+  ColorField,
+  Field,
+  Panel,
+  Segmented,
+  Select,
+  Slider,
+  TextInput,
+  Toggle,
+} from "./ui"
 
 type SourceKind = "text" | "shape" | "image" | "svg" | "upload"
 
@@ -141,7 +152,7 @@ export function SourcePanel({
         )}
       </Panel>
 
-      <Panel title="Material">
+      <Collapsible title="Material">
         <p className="font-mono text-[10px] leading-relaxed text-white/30">
           The ASCII pass reads luminance, so lighting matters more than hue. Lower roughness gives
           sharper highlights and more character contrast.
@@ -167,7 +178,7 @@ export function SourcePanel({
           value={material.metalness}
           onChange={(metalness) => onMaterialChange({ ...material, metalness })}
         />
-      </Panel>
+      </Collapsible>
     </>
   )
 }

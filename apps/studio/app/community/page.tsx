@@ -14,7 +14,7 @@ import {
   type Creation,
 } from "../../lib/gallery"
 
-const REPO = "https://github.com/meetchauhan/glyphforge"
+const REPO = "https://github.com/Meet-1010/glyphforge"
 
 export default function CommunityPage() {
   const [mine, setMine] = useState<Creation[]>([])

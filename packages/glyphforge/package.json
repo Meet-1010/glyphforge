@@ -20,11 +20,11 @@
   "author": "Meet Chauhan",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/meetchauhan/glyphforge.git"
+    "url": "git+https://github.com/Meet-1010/glyphforge.git"
   },
-  "homepage": "https://github.com/meetchauhan/glyphforge#readme",
+  "homepage": "https://github.com/Meet-1010/glyphforge#readme",
   "bugs": {
-    "url": "https://github.com/meetchauhan/glyphforge/issues"
+    "url": "https://github.com/Meet-1010/glyphforge/issues"
   },
   "type": "module",
   "sideEffects": false,

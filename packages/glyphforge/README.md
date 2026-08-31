@@ -66,7 +66,7 @@ const blob = await exportModel(geometry) // a real .glb
 <GlyphHero preset="amber" cellSize={12} />    // override anything
 ```
 
-Build one interactively in **[the Studio](https://glyphforge.dev/studio)** and copy the generated component out.
+Build one interactively in **[the Studio](https://github.com/Meet-1010/glyphforge#studio)** and copy the generated component out.
 
 ---
 

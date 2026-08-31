@@ -4,19 +4,17 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { useFrame, useThree } from "@react-three/fiber"
 import { EffectComposer } from "@react-three/postprocessing"
 import {
-  Box3,
   MathUtils,
   PMREMGenerator,
   Group,
   PerspectiveCamera,
-  Sphere,
   Vector2,
-  type Object3D,
+  Vector3,
   type Texture,
 } from "three"
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js"
 import { AsciiEffect } from "../effects/ascii-effect"
-import { GlyphModel, type GlyphModelProps } from "./glyph-model"
+import { GlyphModel, type GlyphModelProps, type GlyphModelResult } from "./glyph-model"
 import type { AsciiOptions, MotionOptions, ModelSource } from "../types"
 
 const DEFAULT_MOTION: Required<Omit<MotionOptions, "tilt">> & { tilt: [number, number] } = {
@@ -25,6 +23,8 @@ const DEFAULT_MOTION: Required<Omit<MotionOptions, "tilt">> & { tilt: [number, n
   draggable: true,
   hoverZoom: 1.1,
   tilt: [0.3, -0.08],
+  animation: true,
+  animationSpeed: 1,
   respectReducedMotion: true,
 }
 
@@ -136,40 +136,50 @@ function RotatingGroup({ motion, hovered, reducedMotion, children }: RotatingGro
 }
 
 /**
- * Distance that frames a sphere of `radius` in both axes.
+ * Distance that frames a model of `size` in both axes.
  *
- * Framing the bounding *sphere* rather than the box keeps the model the same
- * size through a full rotation, instead of pulsing as its silhouette changes.
+ * Framing the bounding *sphere* seems tidier but punishes anything deep: the
+ * Flamingo is 176 units nose-to-tail and 89 tall, so a sphere fit pushes the
+ * camera back until you are looking at a tiny head-on cross-section. The model
+ * only spins about Y, so its horizontal silhouette sweeps between the X and Z
+ * extents while its height never changes — fitting those two directly keeps it
+ * large without ever clipping.
  */
-function distanceForRadius(camera: PerspectiveCamera, radius: number, padding = 1.35): number {
+function distanceForSize(camera: PerspectiveCamera, size: Vector3, padding = 1.25): number {
   const fovV = MathUtils.degToRad(camera.fov)
   const fovH = 2 * Math.atan(Math.tan(fovV / 2) * Math.max(camera.aspect, 0.0001))
-  const vertical = radius / Math.sin(fovV / 2)
-  const horizontal = radius / Math.sin(fovH / 2)
-  return Math.max(vertical, horizontal) * padding
+
+  const halfWidth = Math.max(size.x, size.z) / 2
+  const halfHeight = size.y / 2
+
+  const vertical = halfHeight / Math.tan(fovV / 2)
+  const horizontal = halfWidth / Math.tan(fovH / 2)
+
+  // Half-depth keeps the near face outside the camera as the model turns.
+  return Math.max(vertical, horizontal) * padding + halfWidth * 0.35
 }
 
 function CameraRig({
   hovered,
   hoverZoom,
   cameraZ,
-  radius,
+  size,
 }: {
   hovered: boolean
   hoverZoom: number
   cameraZ: number | "auto"
-  radius: number | null
+  size: Vector3 | null
 }) {
   const { camera } = useThree()
 
   useFrame(() => {
     const perspective = camera as PerspectiveCamera
-    // Auto-framing recomputes every frame so a resize reframes rather than
-    // cropping — the aspect ratio is half the equation.
+    // Recomputed every frame so a resize reframes rather than crops — the
+    // aspect ratio is half the equation.
     const base =
       cameraZ === "auto"
-        ? radius
-          ? distanceForRadius(perspective, radius)
+        ? size
+          ? distanceForSize(perspective, size)
           : perspective.position.z
         : cameraZ
 
@@ -195,7 +205,7 @@ export interface GlyphSceneProps {
   /** Pause the effect clock when the hero is scrolled out of view. */
   animate: boolean
   cameraZ: number | "auto"
-  onReady?: (object: Object3D) => void
+  onReady?: (result: GlyphModelResult) => void
   onError?: (error: Error) => void
 }
 
@@ -216,13 +226,12 @@ export function GlyphScene({
 }: GlyphSceneProps) {
   const settings = { ...DEFAULT_MOTION, ...motion }
   const [composerReady, setComposerReady] = useState(false)
-  const [radius, setRadius] = useState<number | null>(null)
+  const [size, setSize] = useState<Vector3 | null>(null)
   const frames = useRef(0)
 
-  const handleReady = (object: Object3D) => {
-    const sphere = new Box3().setFromObject(object).getBoundingSphere(new Sphere())
-    setRadius(sphere.radius > 0 ? sphere.radius : null)
-    onReady?.(object)
+  const handleReady = (result: GlyphModelResult) => {
+    setSize(result.size.lengthSq() > 0 ? result.size : null)
+    onReady?.(result)
   }
 
   // `postprocessing` reads renderer state when a pass is added; adding it on
@@ -251,11 +260,19 @@ export function GlyphScene({
         hovered={hovered}
         hoverZoom={settings.hoverZoom}
         cameraZ={cameraZ}
-        radius={radius}
+        size={size}
       />
 
       <RotatingGroup motion={motion} hovered={hovered} reducedMotion={reducedMotion}>
-        <GlyphModel source={source} {...material} onReady={handleReady} onError={onError} />
+        <GlyphModel
+          source={source}
+          {...material}
+          animation={settings.animation}
+          animationSpeed={settings.animationSpeed}
+          paused={!animate || reducedMotion}
+          onReady={handleReady}
+          onError={onError}
+        />
       </RotatingGroup>
 
       {composerReady && (

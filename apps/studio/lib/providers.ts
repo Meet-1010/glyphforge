@@ -1,13 +1,12 @@
 /**
  * Asset search providers.
  *
- * Both sources serve `Access-Control-Allow-Origin: *` on their API *and* their
- * file CDN, so search and import both run entirely in the browser — no proxy,
- * no API key, and nothing about what you search for reaches a Glyphforge
- * server, because there isn't one.
+ * Everything here runs in the browser. Each catalogue's API and its file CDN
+ * both send `Access-Control-Allow-Origin: *`, so search and import need no
+ * proxy, no API key, and no Glyphforge server — because there isn't one.
  */
 
-export type ProviderId = "polyhaven" | "khronos"
+export type ProviderId = "objaverse" | "polyhaven" | "khronos" | "threejs" | "sketchfab"
 
 export interface AssetResult {
   id: string
@@ -20,7 +19,16 @@ export interface AssetResult {
   tags: string[]
   polycount?: number
   downloads?: number
+  /** `true`/`false` when the catalogue tells us; `undefined` when unknown. */
+  animated?: boolean
   sourceUrl: string
+  /** False for catalogues we can search but not legally auto-download. */
+  importable: boolean
+  /**
+   * Objaverse knows only a category up front; the real name, author, licence
+   * and thumbnail are fetched per card once it scrolls into view.
+   */
+  enrich?: boolean
   /** Some providers need a second request to resolve the loadable file. */
   resolveModelUrl: () => Promise<string>
 }
@@ -31,24 +39,165 @@ export interface ProviderMeta {
   blurb: string
   homepage: string
   license: string
+  importable: boolean
+  /** Rough catalogue size, for the UI. */
+  size: string
 }
 
 export const PROVIDERS: ProviderMeta[] = [
+  {
+    id: "objaverse",
+    label: "Objaverse",
+    blurb: "46,000 models across 1,156 categories, from the Allen Institute's dataset.",
+    homepage: "https://objaverse.allenai.org",
+    license: "Per model — mostly CC-BY",
+    importable: true,
+    size: "46,207",
+  },
   {
     id: "polyhaven",
     label: "Poly Haven",
     blurb: "Photoscanned and hand-modelled assets, every one CC0.",
     homepage: "https://polyhaven.com/models",
     license: "CC0 (public domain)",
+    importable: true,
+    size: "521",
+  },
+  {
+    id: "threejs",
+    label: "three.js",
+    blurb: "The three.js example models — the best small animated rigs around.",
+    homepage: "https://github.com/mrdoob/three.js/tree/dev/examples/models/gltf",
+    license: "Per model — check source",
+    importable: true,
+    size: "24",
   },
   {
     id: "khronos",
-    label: "Khronos Samples",
-    blurb: "The official glTF sample models. Licences vary per model.",
+    label: "Khronos",
+    blurb: "The official glTF sample models, including the standard animation tests.",
     homepage: "https://github.com/KhronosGroup/glTF-Sample-Assets",
     license: "Varies — check source",
+    importable: true,
+    size: "119",
+  },
+  {
+    id: "sketchfab",
+    label: "Sketchfab",
+    blurb: "Millions of models. Search here, download from Sketchfab, then upload.",
+    homepage: "https://sketchfab.com",
+    license: "Per model — shown on each result",
+    importable: false,
+    size: "millions",
   },
 ]
+
+const cache = <T,>() => {
+  let promise: Promise<T> | null = null
+  return (load: () => Promise<T>) => {
+    if (!promise) {
+      promise = load()
+      promise.catch(() => {
+        promise = null
+      })
+    }
+    return promise
+  }
+}
+
+// -- Objaverse ---------------------------------------------------------------
+
+const OBJAVERSE_GLB =
+  "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs"
+
+interface ObjaverseIndex {
+  version: number
+  categories: Record<string, string>
+}
+
+const objaverseCache = cache<ObjaverseIndex>()
+
+function loadObjaverseIndex(): Promise<ObjaverseIndex> {
+  return objaverseCache(async () => {
+    const response = await fetch("/objaverse-index.json")
+    if (!response.ok) throw new Error(`Objaverse index returned ${response.status}`)
+    return response.json()
+  })
+}
+
+function titleCase(value: string) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/**
+ * Objaverse entries are `<32-char uid><3-digit shard>`, joined per category.
+ * The uid doubles as the Sketchfab uid, which is what makes it possible to link
+ * every model to its own licence page instead of asserting one.
+ */
+function objaverseResults(index: ObjaverseIndex, terms: string[], perCategory: number) {
+  const results: AssetResult[] = []
+
+  for (const [category, packed] of Object.entries(index.categories)) {
+    const label = category.replace(/_/g, " ")
+    if (terms.length > 0 && !terms.every((term) => label.includes(term))) continue
+
+    const entries = packed.split(",")
+    for (const entry of entries.slice(0, perCategory)) {
+      const uid = entry.slice(0, 32)
+      const shard = entry.slice(32)
+      results.push({
+        id: uid,
+        provider: "objaverse",
+        name: titleCase(category),
+        license: "CC-BY (check source)",
+        tags: [category],
+        sourceUrl: `https://sketchfab.com/models/${uid}`,
+        importable: true,
+        enrich: true,
+        resolveModelUrl: async () => `${OBJAVERSE_GLB}/000-${shard}/${uid}.glb`,
+      })
+    }
+  }
+
+  return results
+}
+
+/**
+ * Fill in a single Objaverse model's real name, author, licence and thumbnail.
+ *
+ * Only called for cards actually on screen, and memoised, so a long scroll does
+ * not fan out into thousands of requests.
+ */
+const metadataCache = new Map<string, Promise<Partial<AssetResult> | null>>()
+
+export function fetchSketchfabMetadata(uid: string): Promise<Partial<AssetResult> | null> {
+  const cached = metadataCache.get(uid)
+  if (cached) return cached
+
+  const promise = fetch(`https://api.sketchfab.com/v3/models/${uid}`)
+    .then((response) => (response.ok ? response.json() : null))
+    .then((data) => {
+      if (!data) return null
+      return {
+        name: data.name || undefined,
+        author: data.user?.displayName,
+        license: data.license?.label ?? "CC-BY (check source)",
+        thumbnail: pickThumbnail(data.thumbnails?.images),
+        animated: (data.animationCount ?? 0) > 0,
+        polycount: data.faceCount,
+      } satisfies Partial<AssetResult>
+    })
+    .catch(() => null)
+
+  metadataCache.set(uid, promise)
+  return promise
+}
+
+function pickThumbnail(images?: Array<{ url: string; width: number }>) {
+  if (!images || images.length === 0) return undefined
+  const sorted = [...images].sort((a, b) => a.width - b.width)
+  return (sorted.find((image) => image.width >= 400) ?? sorted[sorted.length - 1]).url
+}
 
 // -- Poly Haven --------------------------------------------------------------
 
@@ -62,36 +211,30 @@ interface PolyHavenAsset {
   thumbnail_url?: string
 }
 
-let polyHavenCache: Promise<AssetResult[]> | null = null
+const polyHavenCache = cache<AssetResult[]>()
 
 function loadPolyHaven(): Promise<AssetResult[]> {
-  if (polyHavenCache) return polyHavenCache
+  return polyHavenCache(async () => {
+    const response = await fetch("https://api.polyhaven.com/assets?t=models")
+    if (!response.ok) throw new Error(`Poly Haven returned ${response.status}`)
+    const data = (await response.json()) as Record<string, PolyHavenAsset>
 
-  polyHavenCache = fetch("https://api.polyhaven.com/assets?t=models")
-    .then((response) => {
-      if (!response.ok) throw new Error(`Poly Haven returned ${response.status}`)
-      return response.json() as Promise<Record<string, PolyHavenAsset>>
-    })
-    .then((data) =>
-      Object.entries(data).map(([id, asset]) => ({
-        id,
-        provider: "polyhaven" as const,
-        name: asset.name || id,
-        author: Object.keys(asset.authors ?? {})[0],
-        license: "CC0",
-        thumbnail: asset.thumbnail_url,
-        tags: [...(asset.categories ?? []), ...(asset.tags ?? [])],
-        polycount: asset.polycount,
-        downloads: asset.download_count,
-        sourceUrl: `https://polyhaven.com/a/${id}`,
-        resolveModelUrl: () => resolvePolyHavenUrl(id),
-      })),
-    )
-
-  polyHavenCache.catch(() => {
-    polyHavenCache = null
+    return Object.entries(data).map(([id, asset]) => ({
+      id,
+      provider: "polyhaven" as const,
+      name: asset.name || id,
+      author: Object.keys(asset.authors ?? {})[0],
+      license: "CC0",
+      thumbnail: asset.thumbnail_url,
+      tags: [...(asset.categories ?? []), ...(asset.tags ?? [])],
+      polycount: asset.polycount,
+      downloads: asset.download_count,
+      animated: false,
+      sourceUrl: `https://polyhaven.com/a/${id}`,
+      importable: true,
+      resolveModelUrl: () => resolvePolyHavenUrl(id),
+    }))
   })
-  return polyHavenCache
 }
 
 /**
@@ -129,52 +272,159 @@ interface KhronosModel {
 const KHRONOS_BASE =
   "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models"
 
-let khronosCache: Promise<AssetResult[]> | null = null
+/** The index carries no animation flag, so the standard rigs are listed here. */
+const KHRONOS_ANIMATED = new Set([
+  "AnimatedColorsCube", "AnimatedCube", "AnimatedMorphCube", "AnimatedMorphSphere",
+  "AnimatedTriangle", "BoxAnimated", "BrainStem", "CesiumMan", "CesiumMilkTruck",
+  "Fox", "InterpolationTest", "MorphPrimitivesTest", "MorphStressTest",
+  "RecursiveSkeletons", "RiggedFigure", "RiggedSimple", "SimpleSkin",
+  "SimpleMorph", "ToyCar", "VertexColorTest",
+])
+
+const khronosCache = cache<AssetResult[]>()
 
 function loadKhronos(): Promise<AssetResult[]> {
-  if (khronosCache) return khronosCache
+  return khronosCache(async () => {
+    const response = await fetch(`${KHRONOS_BASE}/model-index.json`)
+    if (!response.ok) throw new Error(`Khronos index returned ${response.status}`)
+    const models = (await response.json()) as KhronosModel[]
 
-  khronosCache = fetch(`${KHRONOS_BASE}/model-index.json`)
-    .then((response) => {
-      if (!response.ok) throw new Error(`Khronos index returned ${response.status}`)
-      return response.json() as Promise<KhronosModel[]>
-    })
-    .then((models) =>
-      models
-        // Only single-file .glb: the multi-file variants would drag in
-        // sibling buffers that complicate a one-click import.
-        .filter((model) => model.variants?.["glTF-Binary"])
-        .map((model) => ({
-          id: model.name,
-          provider: "khronos" as const,
-          name: model.label || model.name,
-          license: "Varies — check source",
-          thumbnail: model.screenshot
-            ? `${KHRONOS_BASE}/${model.name}/${model.screenshot}`
-            : undefined,
-          tags: model.tags ?? [],
-          sourceUrl: `https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/${model.name}`,
-          resolveModelUrl: async () =>
-            `${KHRONOS_BASE}/${model.name}/glTF-Binary/${model.variants!["glTF-Binary"]}`,
-        })),
-    )
-
-  khronosCache.catch(() => {
-    khronosCache = null
+    return models
+      // Only single-file .glb: the multi-file variants drag in sibling buffers
+      // that complicate a one-click import.
+      .filter((model) => model.variants?.["glTF-Binary"])
+      .map((model) => ({
+        id: model.name,
+        provider: "khronos" as const,
+        name: model.label || model.name,
+        license: "Varies — check source",
+        thumbnail: model.screenshot
+          ? `${KHRONOS_BASE}/${model.name}/${model.screenshot}`
+          : undefined,
+        tags: model.tags ?? [],
+        animated: KHRONOS_ANIMATED.has(model.name),
+        sourceUrl: `https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/${model.name}`,
+        importable: true,
+        resolveModelUrl: async () =>
+          `${KHRONOS_BASE}/${model.name}/glTF-Binary/${model.variants!["glTF-Binary"]}`,
+      }))
   })
-  return khronosCache
+}
+
+// -- three.js example models -------------------------------------------------
+
+const THREE_BASE = "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf"
+
+/**
+ * Hand-picked because three.js keeps the best small animated rigs anywhere —
+ * a walking soldier or a flapping flamingo reads far better in ASCII than a
+ * static prop does.
+ */
+const THREE_MODELS: Array<{ file: string; name: string; animated: boolean; tags: string[] }> = [
+  { file: "Flamingo.glb", name: "Flamingo", animated: true, tags: ["bird", "animal", "flying"] },
+  { file: "Parrot.glb", name: "Parrot", animated: true, tags: ["bird", "animal", "flying"] },
+  { file: "Stork.glb", name: "Stork", animated: true, tags: ["bird", "animal", "flying"] },
+  { file: "Horse.glb", name: "Horse", animated: true, tags: ["animal", "running"] },
+  { file: "Soldier.glb", name: "Soldier", animated: true, tags: ["character", "human", "walk", "run"] },
+  { file: "Xbot.glb", name: "Xbot", animated: true, tags: ["character", "robot", "walk", "run"] },
+  { file: "Michelle.glb", name: "Michelle", animated: true, tags: ["character", "human", "dance"] },
+  { file: "LittlestTokyo.glb", name: "Littlest Tokyo", animated: true, tags: ["scene", "city", "diorama"] },
+  { file: "BoomBox.glb", name: "Boom Box", animated: false, tags: ["prop", "stereo", "music"] },
+  { file: "CarbonFrameBike.glb", name: "Carbon Frame Bike", animated: false, tags: ["vehicle", "bicycle"] },
+  { file: "AnisotropyBarnLamp.glb", name: "Barn Lamp", animated: false, tags: ["prop", "lamp", "light"] },
+  { file: "DragonAttenuation.glb", name: "Dragon", animated: false, tags: ["creature", "statue", "glass"] },
+  { file: "DispersionTest.glb", name: "Dispersion Test", animated: false, tags: ["spheres", "glass"] },
+  { file: "IridescenceLamp.glb", name: "Iridescence Lamp", animated: false, tags: ["prop", "lamp"] },
+  { file: "SheenChair.glb", name: "Sheen Chair", animated: false, tags: ["furniture", "chair", "fabric"] },
+  { file: "ClearcoatTest.glb", name: "Clearcoat Test", animated: false, tags: ["spheres", "material"] },
+  { file: "MaterialsVariantsShoe.glb", name: "Shoe", animated: false, tags: ["clothing", "shoe"] },
+  { file: "IridescentDishWithOlives.glb", name: "Dish With Olives", animated: false, tags: ["food", "prop"] },
+  { file: "ShadowmappableMesh.glb", name: "Shadowmappable Mesh", animated: false, tags: ["abstract"] },
+  { file: "coffeemat.glb", name: "Coffee Machine", animated: false, tags: ["prop", "machine", "coffee"] },
+  { file: "Nefertiti.glb", name: "Nefertiti", animated: false, tags: ["statue", "bust", "history"] },
+  { file: "Duck.glb", name: "Duck", animated: false, tags: ["animal", "toy", "bird"] },
+  { file: "Fox.glb", name: "Fox", animated: true, tags: ["animal", "character", "run"] },
+  { file: "AVIFTest.glb", name: "AVIF Test", animated: false, tags: ["material", "test"] },
+]
+
+async function loadThreeJs(): Promise<AssetResult[]> {
+  return THREE_MODELS.map((model) => ({
+    id: model.file,
+    provider: "threejs" as const,
+    name: model.name,
+    author: "three.js examples",
+    license: "Per model — check source",
+    tags: model.tags,
+    animated: model.animated,
+    sourceUrl: `${THREE_BASE}/${model.file}`,
+    importable: true,
+    resolveModelUrl: async () => `${THREE_BASE}/${model.file}`,
+  }))
+}
+
+// -- Sketchfab (search only) -------------------------------------------------
+
+interface SketchfabResult {
+  uid: string
+  name: string
+  user?: { displayName?: string }
+  license?: { label?: string }
+  thumbnails?: { images?: Array<{ url: string; width: number }> }
+  tags?: Array<{ name: string }>
+  animationCount?: number
+  faceCount?: number
+  likeCount?: number
+  viewerUrl?: string
+  isDownloadable?: boolean
+}
+
+/**
+ * Sketchfab's search endpoint is public, but downloading a model needs an OAuth
+ * token tied to a real account. Rather than pretend, these results are marked
+ * not-importable and send you to Sketchfab to download, then back here to
+ * upload.
+ */
+async function searchSketchfab(query: string, animatedOnly: boolean): Promise<AssetResult[]> {
+  if (!query.trim()) return []
+
+  const params = new URLSearchParams({
+    type: "models",
+    q: query,
+    downloadable: "true",
+    count: "24",
+    sort_by: "-likeCount",
+  })
+  if (animatedOnly) params.set("animated", "true")
+
+  const response = await fetch(`https://api.sketchfab.com/v3/search?${params}`)
+  if (!response.ok) throw new Error(`Sketchfab returned ${response.status}`)
+  const data = (await response.json()) as { results?: SketchfabResult[] }
+
+  return (data.results ?? []).map((model) => ({
+    id: model.uid,
+    provider: "sketchfab" as const,
+    name: model.name,
+    author: model.user?.displayName,
+    license: model.license?.label ?? "Check source",
+    thumbnail: pickThumbnail(model.thumbnails?.images),
+    tags: (model.tags ?? []).map((tag) => tag.name),
+    polycount: model.faceCount,
+    downloads: model.likeCount,
+    animated: (model.animationCount ?? 0) > 0,
+    sourceUrl: model.viewerUrl ?? `https://sketchfab.com/models/${model.uid}`,
+    importable: false,
+    resolveModelUrl: async () => {
+      throw new Error("Sketchfab downloads need an account — open the source and download there.")
+    },
+  }))
 }
 
 // -- Search ------------------------------------------------------------------
 
-const LOADERS: Record<ProviderId, () => Promise<AssetResult[]>> = {
-  polyhaven: loadPolyHaven,
-  khronos: loadKhronos,
-}
-
 export interface SearchOptions {
   query: string
   providers: ProviderId[]
+  animatedOnly?: boolean
   limit?: number
 }
 
@@ -185,44 +435,62 @@ export interface SearchOutcome {
   failed: Array<{ provider: ProviderId; message: string }>
 }
 
-/**
- * Both catalogues are small enough to fetch once and filter locally, which
- * makes typing feel instant and avoids hammering either API per keystroke.
- */
 export async function searchAssets({
   query,
   providers,
+  animatedOnly = false,
   limit = 60,
 }: SearchOptions): Promise<SearchOutcome> {
   const failed: SearchOutcome["failed"] = []
-
-  const batches = await Promise.all(
-    providers.map(async (provider) => {
-      try {
-        return await LOADERS[provider]()
-      } catch (error) {
-        failed.push({
-          provider,
-          message: error instanceof Error ? error.message : "Request failed",
-        })
-        return [] as AssetResult[]
-      }
-    }),
-  )
-
-  const all = batches.flat()
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean)
 
-  const matched =
-    terms.length === 0
-      ? all
-      : all.filter((asset) => {
-          const haystack = `${asset.name} ${asset.tags.join(" ")} ${asset.author ?? ""}`.toLowerCase()
-          return terms.every((term) => haystack.includes(term))
-        })
+  const run = async (provider: ProviderId): Promise<AssetResult[]> => {
+    try {
+      switch (provider) {
+        case "objaverse": {
+          if (animatedOnly) return []
+          const index = await loadObjaverseIndex()
+          // Cap per category so one huge bucket cannot crowd out every other
+          // match for a broad query.
+          return objaverseResults(index, terms, terms.length > 0 ? 40 : 6)
+        }
+        case "polyhaven":
+          return await loadPolyHaven()
+        case "khronos":
+          return await loadKhronos()
+        case "threejs":
+          return await loadThreeJs()
+        case "sketchfab":
+          return await searchSketchfab(query, animatedOnly)
+      }
+    } catch (error) {
+      failed.push({
+        provider,
+        message: error instanceof Error ? error.message : "Request failed",
+      })
+      return []
+    }
+  }
 
-  // Rank exact name matches first, then by popularity where we know it.
+  const batches = await Promise.all(providers.map(run))
+  const all = batches.flat()
+
+  const matched = all.filter((asset) => {
+    // Objaverse and Sketchfab already filtered server- or index-side.
+    if (terms.length > 0 && asset.provider !== "objaverse" && asset.provider !== "sketchfab") {
+      const haystack = `${asset.name} ${asset.tags.join(" ")} ${asset.author ?? ""}`.toLowerCase()
+      if (!terms.every((term) => haystack.includes(term))) return false
+    }
+    // Only models a catalogue actually reports as animated. Objaverse publishes
+    // no animation flag, so keeping its unknowns here would fill the filter
+    // with models that mostly are not animated — worse than excluding them and
+    // saying so.
+    if (animatedOnly && asset.animated !== true) return false
+    return true
+  })
+
   const ranked = [...matched].sort((a, b) => {
+    if (a.importable !== b.importable) return a.importable ? -1 : 1
     if (terms.length > 0) {
       const aName = a.name.toLowerCase().includes(terms[0]) ? 1 : 0
       const bName = b.name.toLowerCase().includes(terms[0]) ? 1 : 0
@@ -233,3 +501,6 @@ export async function searchAssets({
 
   return { results: ranked.slice(0, limit), total: ranked.length, failed }
 }
+
+/** Total catalogue size, for the landing copy. */
+export const TOTAL_ASSETS = 46207 + 521 + 119 + 24

@@ -5,6 +5,9 @@ import { GlyphCanvas, GlyphHero } from "glyphforge"
 import { CopyButton } from "../components/ui"
 import { SiteNav } from "../components/site-nav"
 
+const FLAMINGO =
+  "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/Flamingo.glb"
+
 const SNIPPET = `import { GlyphHero } from "glyphforge"
 
 <GlyphHero
@@ -49,13 +52,7 @@ export default function LandingPage() {
         preset="terminal"
         cellSize={8}
         height="100dvh"
-        postfx={{
-          contrastAdjust: 1.9,
-          vignetteIntensity: 0.45,
-          mouseGlowEnabled: true,
-          mouseGlowRadius: 260,
-          mouseGlowIntensity: 0.3,
-        }}
+        postfx={{ contrastAdjust: 1.9, vignetteIntensity: 0.3 }}
       >
         <div className="max-w-2xl">
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-violet">
@@ -69,9 +66,9 @@ export default function LandingPage() {
             or forge one here.
           </h1>
           <p className="mx-auto mt-6 max-w-lg text-pretty text-sm leading-relaxed text-white/55">
-            A WebGL ASCII shader you can drop into any React app. Make the 3D model in your browser
-            from text, an image, an SVG or a parametric shape. No Blender, no asset pipeline, no
-            backend.
+            A WebGL ASCII shader you can drop into any React app. Forge the model in your browser
+            from text, an image, an SVG or a shape — or pull one from 46,000 open 3D assets,
+            animation included. No Blender, no asset pipeline, no backend.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -166,6 +163,56 @@ export default function LandingPage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Asset library */}
+      <section className="border-t border-edge px-5 py-20">
+        <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2">
+          <div>
+            <SectionLabel>Or skip the forge</SectionLabel>
+            <h2 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
+              46,871 models, one click from your hero.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-white/55">
+              Search Objaverse, Poly Haven, the Khronos samples and the three.js rigs from one box,
+              then send any of them straight to the Studio. Sketchfab&apos;s catalogue is searchable
+              alongside them.
+            </p>
+            <ul className="mt-6 space-y-2.5">
+              {[
+                "Animated .glb plays in ASCII, clips and all",
+                "Auto-fitted and auto-framed on arrival",
+                "Licences shown as the source states them, never guessed",
+                "Searched from your browser — no server sees your query",
+              ].map((item) => (
+                <li key={item} className="flex gap-2.5 font-mono text-[11px] text-white/50">
+                  <span className="text-violet">+</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/assets"
+              className="mt-7 inline-block rounded-lg border border-edge-bright px-5 py-3 font-mono text-[12px] text-white/75 transition-colors hover:border-violet hover:text-violet"
+            >
+              Browse the library →
+            </Link>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-edge">
+            <GlyphCanvas
+              model={{ type: "url", src: FLAMINGO }}
+              preset="terminal"
+              cellSize={7}
+              maxDpr={1.25}
+              motion={{ autoRotate: 0.5, draggable: false }}
+              style={{ minHeight: 300, height: 300 }}
+            />
+            <p className="border-t border-edge bg-ink-raised px-4 py-3 font-mono text-[10px] text-white/35">
+              three.js Flamingo — a real animated rig, running in ASCII
+            </p>
           </div>
         </div>
       </section>

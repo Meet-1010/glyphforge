@@ -1,49 +1,51 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { SiteNav } from "../../components/site-nav"
 import { Button } from "../../components/ui"
 import { DEFAULT_STATE, encodeState } from "../../lib/config"
 import {
   PROVIDERS,
+  TOTAL_ASSETS,
+  fetchSketchfabMetadata,
   searchAssets,
   type AssetResult,
   type ProviderId,
   type SearchOutcome,
 } from "../../lib/providers"
 
-const SUGGESTIONS = ["chair", "plant", "helmet", "lamp", "rock", "bottle", "statue", "car"]
+const SUGGESTIONS = ["chair", "helmet", "plant", "car", "sword", "lamp", "dog", "guitar"]
+const ALL_PROVIDERS = PROVIDERS.map((p) => p.id)
 
 export default function AssetsPage() {
   const router = useRouter()
   const [query, setQuery] = useState("")
-  const [providers, setProviders] = useState<ProviderId[]>(["polyhaven", "khronos"])
+  const [providers, setProviders] = useState<ProviderId[]>(ALL_PROVIDERS)
+  const [animatedOnly, setAnimatedOnly] = useState(false)
   const [outcome, setOutcome] = useState<SearchOutcome | null>(null)
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState<string | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
 
-  // Catalogues are fetched once and filtered locally, so debouncing only needs
-  // to cover the typing burst, not network latency.
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     const timer = setTimeout(() => {
-      searchAssets({ query, providers })
+      searchAssets({ query, providers, animatedOnly })
         .then((next) => {
           if (!cancelled) setOutcome(next)
         })
         .finally(() => {
           if (!cancelled) setLoading(false)
         })
-    }, 180)
+    }, 200)
 
     return () => {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [query, providers])
+  }, [query, providers, animatedOnly])
 
   const toggleProvider = (id: ProviderId) => {
     setProviders((current) =>
@@ -55,7 +57,6 @@ export default function AssetsPage() {
     )
   }
 
-  /** Resolve the real file URL, then hand it to the Studio as a shared config. */
   const importAsset = useCallback(
     async (asset: AssetResult) => {
       setImporting(asset.id)
@@ -65,15 +66,11 @@ export default function AssetsPage() {
         const config = encodeState({
           ...DEFAULT_STATE,
           model: { type: "url", src },
-          // A downloaded asset arrives with its own materials and its own
-          // scale; auto-framing handles the latter.
           cameraZ: "auto",
         })
         router.push(`/studio?c=${config}`)
       } catch (error) {
-        setImportError(
-          error instanceof Error ? error.message : `Could not import "${asset.name}"`,
-        )
+        setImportError(error instanceof Error ? error.message : `Could not import "${asset.name}"`)
         setImporting(null)
       }
     },
@@ -82,44 +79,41 @@ export default function AssetsPage() {
 
   const results = outcome?.results ?? []
 
-  const heading = useMemo(() => {
-    if (loading && !outcome) return "Loading catalogues…"
-    if (!outcome) return ""
-    if (outcome.total === 0) return "No models matched"
-    const shown = Math.min(outcome.total, results.length)
-    return `${outcome.total} model${outcome.total === 1 ? "" : "s"}${
-      outcome.total > shown ? ` · showing ${shown}` : ""
-    }`
-  }, [loading, outcome, results.length])
-
   return (
     <main className="min-h-dvh bg-ink">
       <SiteNav />
 
-      <div className="mx-auto max-w-6xl px-5 py-10">
-        <header className="max-w-2xl">
-          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-violet">
-            Asset search
-          </span>
-          <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
-            Find a model, send it straight to the Studio.
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-white/55">
-            Searches open 3D catalogues directly from your browser. Nothing is proxied through a
-            server, so no one — including us — sees what you look for.
-          </p>
-        </header>
+      {/* Sticky so the filters stay reachable deep in a long grid. */}
+      <div className="sticky top-[49px] z-20 border-b border-edge bg-ink/95 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-5 py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={`Search ${TOTAL_ASSETS.toLocaleString()} importable models…`}
+                className="w-full rounded-lg border border-edge bg-ink-raised px-4 py-3 pr-20 font-mono text-[13px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-violet"
+              />
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-mono text-[10px] text-white/25">
+                {loading ? "…" : outcome ? outcome.total.toLocaleString() : ""}
+              </span>
+            </div>
 
-        <div className="mt-8 space-y-3">
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search models — chair, helmet, plant…"
-            className="w-full rounded-lg border border-edge bg-ink-raised px-4 py-3 font-mono text-[13px] text-white outline-none transition-colors placeholder:text-white/25 focus:border-violet"
-          />
+            <button
+              type="button"
+              onClick={() => setAnimatedOnly((value) => !value)}
+              className={`shrink-0 rounded-lg border px-4 py-3 font-mono text-[11px] transition-colors ${
+                animatedOnly
+                  ? "border-violet bg-violet/10 text-violet"
+                  : "border-edge text-white/45 hover:border-edge-bright hover:text-white/75"
+              }`}
+            >
+              Animated only
+            </button>
+          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             {PROVIDERS.map((provider) => {
               const active = providers.includes(provider.id)
               return (
@@ -127,41 +121,51 @@ export default function AssetsPage() {
                   key={provider.id}
                   type="button"
                   onClick={() => toggleProvider(provider.id)}
-                  title={`${provider.blurb} · ${provider.license}`}
-                  className={`rounded-md border px-3 py-1.5 font-mono text-[10px] transition-colors ${
+                  title={`${provider.blurb}\n${provider.license}`}
+                  className={`rounded-md border px-2.5 py-1 font-mono text-[10px] transition-colors ${
                     active
-                      ? "border-violet bg-violet/10 text-violet"
-                      : "border-edge text-white/40 hover:border-edge-bright hover:text-white/70"
+                      ? "border-violet/50 bg-violet/10 text-violet"
+                      : "border-edge text-white/35 hover:border-edge-bright hover:text-white/60"
                   }`}
                 >
                   {provider.label}
+                  <span className="ml-1.5 opacity-50">{provider.size}</span>
                 </button>
               )
             })}
-            <span className="ml-auto font-mono text-[10px] text-white/30">{heading}</span>
           </div>
-
-          {!query && (
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="font-mono text-[10px] text-white/25">Try:</span>
-              {SUGGESTIONS.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  type="button"
-                  onClick={() => setQuery(suggestion)}
-                  className="rounded-md px-2 py-1 font-mono text-[10px] text-white/40 transition-colors hover:bg-white/5 hover:text-white/75"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-5 py-8">
+        {!query && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[10px] text-white/25">Try:</span>
+            {SUGGESTIONS.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => setQuery(suggestion)}
+                className="rounded-md border border-edge px-2.5 py-1 font-mono text-[10px] text-white/40 transition-colors hover:border-violet hover:text-violet"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {animatedOnly && (
+          <p className="mb-4 rounded-md border border-edge bg-ink-raised px-3 py-2 font-mono text-[10px] leading-relaxed text-white/40">
+            Showing only models their catalogue reports as animated. Objaverse publishes no
+            animation flag, so its 46,207 models are excluded from this filter rather than guessed
+            at — clear it to browse them.
+          </p>
+        )}
 
         {outcome?.failed.map((failure) => (
           <p
             key={failure.provider}
-            className="mt-4 rounded-md border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] text-amber/80"
+            className="mb-4 rounded-md border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] text-amber/80"
           >
             {PROVIDERS.find((p) => p.id === failure.provider)?.label} is unreachable:{" "}
             {failure.message}
@@ -169,12 +173,12 @@ export default function AssetsPage() {
         ))}
 
         {importError && (
-          <p className="mt-4 rounded-md border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] text-red-300/80">
+          <p className="mb-4 rounded-md border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] text-red-300/80">
             {importError}
           </p>
         )}
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {results.map((asset) => (
             <AssetCard
               key={`${asset.provider}:${asset.id}`}
@@ -187,7 +191,7 @@ export default function AssetsPage() {
         </div>
 
         {!loading && outcome && outcome.total === 0 && (
-          <p className="mt-16 text-center font-mono text-[11px] text-white/30">
+          <p className="mt-20 text-center font-mono text-[11px] text-white/30">
             Nothing matched “{query}”. Try a broader word, or forge one from scratch in the{" "}
             <a href="/studio" className="text-violet hover:text-white">
               Studio
@@ -197,10 +201,12 @@ export default function AssetsPage() {
         )}
 
         <footer className="mt-16 border-t border-edge pt-6">
-          <p className="font-mono text-[10px] leading-relaxed text-white/30">
-            Licences are shown exactly as the source states them and are never guessed. Poly Haven
-            models are CC0; Khronos sample models vary per model, so check the source before using
-            one commercially.
+          <p className="max-w-3xl font-mono text-[10px] leading-relaxed text-white/30">
+            Licences are printed exactly as each source states them and are never inferred. Poly
+            Haven is CC0; Objaverse models are individually licensed on Sketchfab, mostly CC-BY;
+            Khronos and three.js vary per model. Check the source before using anything
+            commercially. Sketchfab results are searchable but not directly importable — downloading
+            there needs your own account, so open the source, download, then upload in the Studio.
           </p>
         </footer>
       </div>
@@ -219,56 +225,105 @@ function AssetCard({
   disabled: boolean
   onImport: () => void
 }) {
+  const ref = useRef<HTMLElement>(null)
   const [broken, setBroken] = useState(false)
+  const [extra, setExtra] = useState<Partial<AssetResult> | null>(null)
+
+  // Objaverse knows only a category up front. Fetching each model's real name,
+  // author, licence and thumbnail on demand — and only once the card is on
+  // screen — keeps a 46k-row catalogue from fanning out into thousands of
+  // requests the moment you type.
+  useEffect(() => {
+    if (!asset.enrich || extra) return
+    const element = ref.current
+    if (!element || typeof IntersectionObserver === "undefined") return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return
+        observer.disconnect()
+        void fetchSketchfabMetadata(asset.id).then((data) => data && setExtra(data))
+      },
+      { rootMargin: "200px" },
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [asset.enrich, asset.id, extra])
+
+  const merged = { ...asset, ...(extra ?? {}) }
+  const provider = PROVIDERS.find((p) => p.id === asset.provider)
 
   return (
-    <article className="group overflow-hidden rounded-xl border border-edge bg-ink-raised transition-colors hover:border-edge-bright">
+    <article
+      ref={ref}
+      className="group flex flex-col overflow-hidden rounded-xl border border-edge bg-ink-raised transition-colors hover:border-edge-bright"
+    >
       <div className="relative aspect-[4/3] overflow-hidden bg-ink-panel">
-        {asset.thumbnail && !broken ? (
-          // Remote thumbnails from many hosts; next/image would need each one
-          // whitelisted in next.config for no real benefit here.
+        {merged.thumbnail && !broken ? (
+          // Thumbnails come from several hosts; next/image would need each one
+          // allow-listed in next.config for no real benefit here.
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={asset.thumbnail}
+            src={merged.thumbnail}
             alt=""
             loading="lazy"
             onError={() => setBroken(true)}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="grid h-full place-items-center font-mono text-[10px] text-white/20">
-            no preview
+          <div className="grid h-full place-items-center font-mono text-[10px] text-white/15">
+            {asset.enrich && !extra ? "···" : "no preview"}
           </div>
         )}
-        <span className="absolute left-2 top-2 rounded bg-ink/80 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/60 backdrop-blur-sm">
-          {asset.provider === "polyhaven" ? "Poly Haven" : "Khronos"}
+
+        <span className="absolute left-2 top-2 rounded bg-ink/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-white/60 backdrop-blur-sm">
+          {provider?.label}
         </span>
+
+        {merged.animated && (
+          <span className="absolute right-2 top-2 rounded bg-violet/90 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-ink">
+            Animated
+          </span>
+        )}
       </div>
 
-      <div className="space-y-2.5 p-3.5">
-        <div>
-          <h3 className="truncate font-mono text-[12px] text-white" title={asset.name}>
-            {asset.name}
+      <div className="flex flex-1 flex-col gap-2.5 p-3.5">
+        <div className="flex-1">
+          <h3 className="truncate font-mono text-[12px] text-white" title={merged.name}>
+            {merged.name}
           </h3>
           <p className="mt-1 truncate font-mono text-[10px] text-white/35">
-            {asset.author ? `${asset.author} · ` : ""}
-            {asset.license}
-            {asset.polycount ? ` · ${asset.polycount.toLocaleString()} tris` : ""}
+            {merged.author ? `${merged.author} · ` : ""}
+            {merged.license}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="primary" onClick={onImport} disabled={disabled}>
-            {importing ? "Importing…" : "Import to Studio"}
-          </Button>
-          <a
-            href={asset.sourceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md px-2 py-2 font-mono text-[10px] text-white/35 transition-colors hover:bg-white/5 hover:text-white/70"
-          >
-            Source
-          </a>
+        <div className="flex items-center gap-1.5">
+          {asset.importable ? (
+            <>
+              <Button variant="primary" onClick={onImport} disabled={disabled}>
+                {importing ? "Importing…" : "Import"}
+              </Button>
+              <a
+                href={merged.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="View licence and original"
+                className="rounded-md px-2 py-2 font-mono text-[10px] text-white/30 transition-colors hover:bg-white/5 hover:text-white/70"
+              >
+                Source
+              </a>
+            </>
+          ) : (
+            <a
+              href={asset.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-edge px-3 py-2 font-mono text-[11px] text-white/60 transition-colors hover:border-edge-bright hover:text-white"
+            >
+              Open on Sketchfab
+            </a>
+          )}
         </div>
       </div>
     </article>

@@ -1,6 +1,58 @@
 "use client"
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useId, useState, type ReactNode } from "react"
+
+/**
+ * A collapsible group.
+ *
+ * The Studio exposes every knob the shader has, which is a wall of forty
+ * controls if they are all open at once. Collapsing by default keeps the
+ * common path short without hiding anything behind a different screen.
+ */
+export function Collapsible({
+  title,
+  hint,
+  defaultOpen = false,
+  children,
+}: {
+  title: string
+  hint?: string
+  defaultOpen?: boolean
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+  const id = useId()
+
+  return (
+    <section className="border-b border-edge last:border-b-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-white/[0.02]"
+      >
+        <span className="flex items-baseline gap-2">
+          <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+            {title}
+          </span>
+          {hint && <span className="font-mono text-[9px] text-white/25">{hint}</span>}
+        </span>
+        <span
+          className={`font-mono text-[10px] text-white/30 transition-transform ${open ? "rotate-90" : ""}`}
+          aria-hidden
+        >
+          &gt;
+        </span>
+      </button>
+      {open && (
+        <div id={id} className="space-y-3 px-4 pb-4">
+          {children}
+        </div>
+      )}
+    </section>
+  )
+}
 
 export function Panel({
   title,

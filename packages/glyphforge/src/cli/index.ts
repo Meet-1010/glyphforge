@@ -190,7 +190,7 @@ export function AsciiHero() {
   return (
     <GlyphHero
       // Swap this for { type: "url", src: "/models/yours.glb" } to use your own
-      // model, or forge one at https://glyphforge.dev/studio
+      // model, or forge one at https://github.com/Meet-1010/glyphforge#studio
       model={{ type: "text", value: "SHIP IT" }}
       preset="matrix"
       height="100vh"
@@ -263,7 +263,7 @@ function commandInit(args: string[], cwd: string) {
   if (project.framework === "next") {
     log(paint("dim", "     It's a client component already — no extra directive needed."))
   }
-  log(`  2. Forge a model at ${paint("violet", "https://glyphforge.dev/studio")} and paste the config back.`)
+  log(`  2. Forge a model at ${paint("violet", "https://github.com/Meet-1010/glyphforge#studio")} and paste the config back.`)
   log(`  3. Want to own the source? ${paint("violet", "npx glyphforge add hero")}`)
   log()
 }
@@ -286,7 +286,7 @@ function commandHelp() {
   log(`    ${"--dir, -d".padEnd(14)} ${paint("dim", "Where `add` should write files")}`)
   log(`    ${"--force".padEnd(14)} ${paint("dim", "Overwrite existing files")}`)
   log()
-  log(paint("dim", "  Studio: https://glyphforge.dev/studio"))
+  log(paint("dim", "  Studio: https://github.com/Meet-1010/glyphforge#studio"))
   log()
 }
 

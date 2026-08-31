@@ -13,3 +13,6 @@ yarn-error.log*
 .turbo/
 coverage/
 *.tgz
+
+# Objaverse path index cache (20MB, refetched on demand)
+.cache/
