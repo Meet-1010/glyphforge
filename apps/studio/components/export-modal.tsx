@@ -52,7 +52,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
       role="presentation"
     >
       <div
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden border border-rule bg-ink-2 shadow-2xl"
+        className="flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-rule bg-ink-2 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -176,7 +176,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
                       readOnly
                       value={link}
                       onFocus={(event) => event.target.select()}
-                      className="w-full truncate border border-rule bg-ink px-3 py-2 font-mono text-[10px] text-bone/60 outline-none"
+                      className="w-full truncate rounded-[var(--radius-pill)] border border-rule bg-ink px-4 py-2 font-mono text-[10px] text-bone/60 outline-none"
                     />
                     <CopyButton text={link} label="Copy link" variant="primary" />
                   </div>
@@ -198,7 +198,7 @@ export function ExportModal({ state, object, onClose }: ExportModalProps) {
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="max-h-80 overflow-auto border border-rule bg-ink p-4 font-mono text-[11px] leading-relaxed text-bone/75">
+    <pre className="max-h-80 overflow-auto rounded-[var(--radius-md)] border border-rule bg-ink p-4 font-mono text-[11px] leading-relaxed text-bone/75">
       <code>{children}</code>
     </pre>
   )
@@ -207,7 +207,7 @@ function Code({ children }: { children: string }) {
 function CommandRow({ command }: { command: string }) {
   return (
     <div className="flex items-center gap-2">
-      <code className="w-full overflow-x-auto whitespace-nowrap border border-rule bg-ink px-3 py-2 font-mono text-[10px] text-bone">
+      <code className="w-full overflow-x-auto whitespace-nowrap rounded-[var(--radius-sm)] border border-rule bg-ink px-3 py-2 font-mono text-[10px] text-bone">
         {command}
       </code>
       <CopyButton text={command} />
@@ -228,7 +228,7 @@ function Step({
 }) {
   return (
     <div className="flex gap-3">
-      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-rule-bright font-mono text-[10px] text-bone/45">
+      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[var(--radius-pill)] border border-rule-bright font-mono text-[10px] text-bone/45">
         {n}
       </span>
       <div className="min-w-0 flex-1 space-y-2">
@@ -242,7 +242,7 @@ function Step({
 
 function Warning({ children }: { children: React.ReactNode }) {
   return (
-    <p className="border border-rule-bright bg-ink-3 px-3 py-2 font-mono text-[10px] leading-relaxed text-bone-dim">
+    <p className="rounded-[var(--radius-md)] border border-rule-bright bg-ink-3 px-3 py-2 font-mono text-[10px] leading-relaxed text-bone-dim">
       {children}
     </p>
   )

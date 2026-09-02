@@ -140,16 +140,16 @@ export function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="flex w-full items-center justify-between px-1 py-1.5 text-left transition-colors hover:bg-bone/[0.03]"
+      className="flex w-full items-center justify-between rounded-[var(--radius-sm)] px-2 py-1.5 text-left transition-colors hover:bg-bone/[0.03]"
     >
       <span className="font-mono text-[11px] text-bone/55">{label}</span>
       <span
-        className={`relative h-4 w-7 shrink-0  transition-colors ${
+        className={`relative h-4 w-7 shrink-0 rounded-[var(--radius-pill)] transition-colors ${
           checked ? "bg-bone" : "bg-rule-bright"
         }`}
       >
         <span
-          className={`absolute top-0.5 h-3 w-3  bg-ink transition-transform ${
+          className={`absolute top-0.5 h-3 w-3 rounded-[var(--radius-pill)] bg-ink transition-transform ${
             checked ? "translate-x-3.5" : "translate-x-0.5"
           }`}
         />
@@ -174,13 +174,13 @@ export function Segmented<T extends string>({
       {label && (
         <div className="mb-1.5 font-mono text-[11px] text-bone/55">{label}</div>
       )}
-      <div className="flex gap-1 border border-rule bg-ink p-1">
+      <div className="flex gap-1 rounded-[var(--radius-pill)] border border-rule bg-ink p-1">
         {options.map((option) => (
           <button
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`flex-1  px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+            className={`flex-1 rounded-[var(--radius-pill)] px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors ${
               value === option.value
                 ? "bg-bone text-ink"
                 : "text-bone/45 hover:bg-bone/5 hover:text-bone/70"
@@ -210,7 +210,7 @@ export function Select<T extends string>({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as T)}
-        className="w-full appearance-none border border-rule bg-ink px-3 py-2 font-mono text-[11px] text-bone/80 outline-none transition-colors focus:border-bone"
+        className="w-full appearance-none rounded-[var(--radius-sm)] border border-rule bg-ink px-3 py-2 font-mono text-[11px] text-bone/80 outline-none transition-colors focus:border-bone"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value} className="bg-ink">
@@ -236,7 +236,7 @@ export function TextInput({
   multiline?: boolean
 }) {
   const className =
-    "w-full  border border-rule bg-ink px-3 py-2 font-mono text-[12px] text-bone/85 outline-none transition-colors placeholder:text-bone/25 focus:border-bone"
+    "w-full rounded-[var(--radius-sm)] border border-rule bg-ink px-3 py-2 font-mono text-[12px] text-bone/85 outline-none transition-colors placeholder:text-bone/25 focus:border-bone"
   return (
     <Field label={label}>
       {multiline ? (
@@ -276,13 +276,13 @@ export function ColorField({
           type="color"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="h-8 w-10 shrink-0"
+          className="h-8 w-10 shrink-0 rounded-[var(--radius-sm)]"
         />
         <input
           type="text"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full border border-rule bg-ink px-3 py-1.5 font-mono text-[11px] text-bone/70 outline-none focus:border-bone"
+          className="w-full rounded-[var(--radius-sm)] border border-rule bg-ink px-3 py-1.5 font-mono text-[11px] text-bone/70 outline-none focus:border-bone"
         />
       </div>
     </Field>
@@ -303,7 +303,7 @@ export function Button({
   title?: string
 }) {
   const base =
-    "inline-flex items-center justify-center gap-2  px-3 py-2 font-mono text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+    "inline-flex items-center justify-center gap-2 rounded-[var(--radius-pill)] px-3.5 py-2 font-mono text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-40"
   const variants = {
     default: "border border-rule bg-ink-2 text-bone/75 hover:border-rule-bright hover:text-bone",
     primary: "bg-bone text-ink hover:bg-bone-dim",

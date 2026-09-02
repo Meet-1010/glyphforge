@@ -96,13 +96,13 @@ export default function LandingPage() {
                 <div className="pointer-events-auto flex flex-wrap items-center gap-2">
                   <Link
                     href="/studio"
-                    className="bg-bone px-5 py-3 font-mono text-[12px] text-ink transition-colors hover:bg-bone-dim"
+                    className="rounded-[var(--radius-pill)] bg-bone px-5 py-3 font-mono text-[12px] text-ink transition-colors hover:bg-bone-dim"
                   >
                     Open the Studio
                   </Link>
                   <Link
                     href="/assets"
-                    className="border border-rule-bright px-5 py-3 font-mono text-[12px] text-bone transition-colors hover:border-bone"
+                    className="rounded-[var(--radius-pill)] border border-rule-bright px-5 py-3 font-mono text-[12px] text-bone transition-colors hover:border-bone"
                   >
                     Browse 46,871 models
                   </Link>
@@ -140,7 +140,7 @@ export default function LandingPage() {
             </dl>
           </div>
 
-          <div className="border border-rule">
+          <div className="overflow-hidden rounded-[var(--radius-lg)] border border-rule">
             <div className="flex items-center justify-between border-b border-rule bg-ink-3 px-4 py-2.5">
               <span className="font-mono text-[10px] text-muted">ascii-hero.tsx</span>
               <CopyButton text={SNIPPET} variant="ghost" />
@@ -158,10 +158,10 @@ export default function LandingPage() {
           one in the browser instead — and hands you a real mesh you can export and use anywhere.
         </p>
 
-        <div className="mt-10 grid border-l border-t border-rule sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {SOURCES.map((source) => (
-            <article key={source.title} className="border-b border-r border-rule">
-              <div className="h-52 border-b border-rule">
+            <article key={source.title} className="rounded-[var(--radius-lg)] border border-rule bg-ink-2 p-1.5">
+              <div className="h-52 overflow-hidden rounded-[var(--radius-md)] bg-ink">
                 <GlyphCanvas
                   model={source.model}
                   preset={source.preset}
@@ -172,7 +172,7 @@ export default function LandingPage() {
                   style={{ minHeight: 0, height: "100%" }}
                 />
               </div>
-              <div className="p-4">
+              <div className="px-3 pb-3 pt-3.5">
                 <div className="flex items-baseline gap-2">
                   <span className="font-mono text-[10px] text-muted">{source.n}</span>
                   <h3 className="font-mono text-[12px] text-bone">{source.title}</h3>
@@ -217,13 +217,13 @@ export default function LandingPage() {
 
             <Link
               href="/assets"
-              className="mt-8 inline-block border border-rule-bright px-5 py-3 font-mono text-[12px] text-bone transition-colors hover:border-bone"
+              className="mt-8 inline-block rounded-[var(--radius-pill)] border border-rule-bright px-5 py-3 font-mono text-[12px] text-bone transition-colors hover:border-bone"
             >
               Browse the library
             </Link>
           </div>
 
-          <figure className="border border-rule">
+          <figure className="overflow-hidden rounded-[var(--radius-lg)] border border-rule bg-ink-2 p-1.5">
             <GlyphCanvas
               model={{ type: "url", src: FLAMINGO }}
               preset="terminal"
@@ -231,9 +231,10 @@ export default function LandingPage() {
               maxDpr={1.25}
               transparent
               motion={{ autoRotate: 0.5, draggable: false }}
+              className="rounded-[var(--radius-md)] overflow-hidden"
               style={{ minHeight: 320, height: 320 }}
             />
-            <figcaption className="border-t border-rule bg-ink-2 px-4 py-3 font-mono text-[10px] text-muted">
+            <figcaption className="px-3 pb-1 pt-3 font-mono text-[10px] text-muted">
               three.js Flamingo — a real animated rig, running in ASCII
             </figcaption>
           </figure>
@@ -266,7 +267,7 @@ export default function LandingPage() {
                 <p className="mt-1.5 font-mono text-[11px] text-muted">{step.body}</p>
               </div>
               <div className="flex items-start gap-2">
-                <code className="w-full overflow-x-auto whitespace-nowrap border border-rule bg-ink-2 px-3 py-2.5 font-mono text-[11px] text-bone-dim">
+                <code className="w-full overflow-x-auto whitespace-nowrap rounded-[var(--radius-sm)] border border-rule bg-ink-2 px-3 py-2.5 font-mono text-[11px] text-bone-dim">
                   {step.command}
                 </code>
                 <CopyButton text={step.command} />

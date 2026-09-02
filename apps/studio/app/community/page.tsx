@@ -66,7 +66,7 @@ export default function CommunityPage() {
           />
 
           {mine.length === 0 ? (
-            <div className="mt-5 border border-dashed border-rule-bright p-10 text-center">
+            <div className="mt-5 rounded-[var(--radius-lg)] border border-dashed border-rule-bright p-10 text-center">
               <p className="font-mono text-[11px] text-bone/40">Nothing saved yet.</p>
               <p className="mx-auto mt-2 max-w-md font-mono text-[10px] leading-relaxed text-bone/25">
                 Build something in the Studio and hit Save. Creations are stored in this browser
@@ -74,7 +74,7 @@ export default function CommunityPage() {
               </p>
               <Link
                 href="/studio"
-                className="mt-5 inline-block bg-bone px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
+                className="mt-5 inline-block rounded-[var(--radius-pill)] bg-bone px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
               >
                 Open the Studio
               </Link>
@@ -88,7 +88,7 @@ export default function CommunityPage() {
           )}
         </section>
 
-        <section className="mt-16 border border-rule bg-ink-2 p-6">
+        <section className="mt-16 rounded-[var(--radius-lg)] border border-rule bg-ink-2 p-6">
           <h2 className="font-mono text-[12px] text-bone">Sharing what you make</h2>
           <div className="mt-3 space-y-3 text-[12px] leading-relaxed text-bone/50">
             <p>
@@ -110,7 +110,7 @@ export default function CommunityPage() {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-bone px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
+              className="rounded-[var(--radius-pill)] bg-bone px-4 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
             >
               Submit a creation
             </a>
@@ -118,7 +118,7 @@ export default function CommunityPage() {
               href={REPO}
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-rule px-4 py-2 font-mono text-[11px] text-bone/60 transition-colors hover:border-rule-bright hover:text-bone"
+              className="rounded-[var(--radius-pill)] border border-rule px-4 py-2 font-mono text-[11px] text-bone/60 transition-colors hover:border-rule-bright hover:text-bone"
             >
               Repository
             </a>
@@ -146,10 +146,10 @@ function CreationCard({ creation, onDelete }: { creation: Creation; onDelete?: (
   useEffect(() => setOrigin(window.location.origin), [])
 
   return (
-    <article className="overflow-hidden border border-rule bg-ink-2 transition-colors hover:border-rule-bright">
-      <LazyPreview config={creation.config} height={200} className="border-b border-rule" />
+    <article className="rounded-[var(--radius-lg)] border border-rule bg-ink-2 p-1.5 transition-colors hover:border-rule-bright">
+      <LazyPreview config={creation.config} height={200} className="overflow-hidden rounded-[var(--radius-md)]" />
 
-      <div className="space-y-3 p-4">
+      <div className="space-y-3 px-2.5 pb-2 pt-3.5">
         <div>
           <h3 className="truncate font-mono text-[12px] text-bone">{creation.title}</h3>
           <p className="mt-1 font-mono text-[10px] text-bone/35">
@@ -160,7 +160,7 @@ function CreationCard({ creation, onDelete }: { creation: Creation; onDelete?: (
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={studioHref}
-            className="bg-bone px-3 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
+            className="rounded-[var(--radius-pill)] bg-bone px-3.5 py-2 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
           >
             Open in Studio
           </Link>

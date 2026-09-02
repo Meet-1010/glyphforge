@@ -96,7 +96,7 @@ export function LookPanel({ state, onChange, animations }: LookPanelProps) {
               type="button"
               onClick={() => applyPreset(name)}
               title={PRESET_BLURBS[name]}
-              className={` border px-2 py-2 text-left font-mono text-[10px] uppercase tracking-wider transition-colors ${
+              className={`rounded-[var(--radius-md)] border px-2.5 py-2 text-left font-mono text-[10px] uppercase tracking-wider transition-colors ${
                 state.preset === name
                   ? "border-bone bg-bone/10 text-bone"
                   : "border-rule text-bone/45 hover:border-rule-bright hover:text-bone/75"

@@ -93,7 +93,7 @@ export default function AssetsPage() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={`Search ${TOTAL_ASSETS.toLocaleString()} importable models…`}
-                className="w-full border border-rule bg-ink-2 px-4 py-3 pr-20 font-mono text-[13px] text-bone outline-none transition-colors placeholder:text-bone/25 focus:border-bone"
+                className="w-full rounded-[var(--radius-pill)] border border-rule bg-ink-2 px-5 py-3 pr-20 font-mono text-[13px] text-bone outline-none transition-colors placeholder:text-bone/25 focus:border-bone"
               />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-mono text-[10px] text-bone/25">
                 {loading ? "…" : outcome ? outcome.total.toLocaleString() : ""}
@@ -103,7 +103,7 @@ export default function AssetsPage() {
             <button
               type="button"
               onClick={() => setAnimatedOnly((value) => !value)}
-              className={`shrink-0  border px-4 py-3 font-mono text-[11px] transition-colors ${
+              className={`shrink-0 rounded-[var(--radius-pill)] border px-4 py-3 font-mono text-[11px] transition-colors ${
                 animatedOnly
                   ? "border-bone bg-bone/10 text-bone"
                   : "border-rule text-bone/45 hover:border-rule-bright hover:text-bone/75"
@@ -122,7 +122,7 @@ export default function AssetsPage() {
                   type="button"
                   onClick={() => toggleProvider(provider.id)}
                   title={`${provider.blurb}\n${provider.license}`}
-                  className={` border px-2.5 py-1 font-mono text-[10px] transition-colors ${
+                  className={`rounded-[var(--radius-pill)] border px-2.5 py-1 font-mono text-[10px] transition-colors ${
                     active
                       ? "border-bone/50 bg-bone/10 text-bone"
                       : "border-rule text-bone/35 hover:border-rule-bright hover:text-bone/60"
@@ -146,7 +146,7 @@ export default function AssetsPage() {
                 key={suggestion}
                 type="button"
                 onClick={() => setQuery(suggestion)}
-                className="border border-rule px-2.5 py-1 font-mono text-[10px] text-bone/40 transition-colors hover:border-bone hover:text-bone"
+                className="rounded-[var(--radius-pill)] border border-rule px-2.5 py-1 font-mono text-[10px] text-bone/40 transition-colors hover:border-bone hover:text-bone"
               >
                 {suggestion}
               </button>
@@ -165,7 +165,7 @@ export default function AssetsPage() {
         {outcome?.failed.map((failure) => (
           <p
             key={failure.provider}
-            className="mb-4 border border-rule-bright bg-ink-3 px-3 py-2 font-mono text-[10px] text-bone-dim"
+            className="mb-4 rounded-[var(--radius-md)] border border-rule-bright bg-ink-3 px-3 py-2 font-mono text-[10px] text-bone-dim"
           >
             {PROVIDERS.find((p) => p.id === failure.provider)?.label} is unreachable:{" "}
             {failure.message}
@@ -173,7 +173,7 @@ export default function AssetsPage() {
         ))}
 
         {importError && (
-          <p className="mb-4 border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] text-red-300/80">
+          <p className="mb-4 rounded-[var(--radius-md)] border border-red-500/25 bg-red-500/5 px-3 py-2 font-mono text-[10px] text-red-300/80">
             {importError}
           </p>
         )}
@@ -256,9 +256,9 @@ function AssetCard({
   return (
     <article
       ref={ref}
-      className="group flex flex-col overflow-hidden border border-rule bg-ink-2 transition-colors hover:border-rule-bright"
+      className="group flex flex-col rounded-[var(--radius-lg)] border border-rule bg-ink-2 p-1.5 transition-colors hover:border-rule-bright"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-ink-3">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-md)] bg-ink-3">
         {merged.thumbnail && !broken ? (
           // Thumbnails come from several hosts; next/image would need each one
           // allow-listed in next.config for no real benefit here.
@@ -276,18 +276,18 @@ function AssetCard({
           </div>
         )}
 
-        <span className="absolute left-2 top-2 bg-ink/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-bone/60 backdrop-blur-sm">
+        <span className="absolute left-2 top-2 rounded-[var(--radius-pill)] bg-ink/85 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-bone/60 backdrop-blur-sm">
           {provider?.label}
         </span>
 
         {merged.animated && (
-          <span className="absolute right-2 top-2 bg-bone/90 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-ink">
+          <span className="absolute right-2 top-2 rounded-[var(--radius-pill)] bg-bone/90 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-ink">
             Animated
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2.5 p-3.5">
+      <div className="flex flex-1 flex-col gap-2.5 px-2.5 pb-2 pt-3">
         <div className="flex-1">
           <h3 className="truncate font-mono text-[12px] text-bone" title={merged.name}>
             {merged.name}
@@ -309,7 +309,7 @@ function AssetCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 title="View licence and original"
-                className="px-2 py-2 font-mono text-[10px] text-bone/30 transition-colors hover:bg-bone/5 hover:text-bone/70"
+                className="rounded-[var(--radius-pill)] px-2.5 py-2 font-mono text-[10px] text-bone/30 transition-colors hover:bg-bone/5 hover:text-bone/70"
               >
                 Source
               </a>
@@ -319,7 +319,7 @@ function AssetCard({
               href={asset.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="border border-rule px-3 py-2 font-mono text-[11px] text-bone/60 transition-colors hover:border-rule-bright hover:text-bone"
+              className="rounded-[var(--radius-pill)] border border-rule px-3.5 py-2 font-mono text-[11px] text-bone/60 transition-colors hover:border-rule-bright hover:text-bone"
             >
               Open on Sketchfab
             </a>

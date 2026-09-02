@@ -37,7 +37,7 @@ export function SiteNav({ floating = false }: { floating?: boolean }) {
               <Link
                 key={link.href}
                 href={link.href}
-                className="bg-bone px-3.5 py-1.5 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
+                className="rounded-[var(--radius-pill)] bg-bone px-4 py-1.5 font-mono text-[11px] text-ink transition-colors hover:bg-bone-dim"
               >
                 {link.label}
               </Link>
@@ -48,10 +48,10 @@ export function SiteNav({ floating = false }: { floating?: boolean }) {
             <Link
               key={link.href}
               href={link.href}
-              className={`font-mono text-[11px] transition-colors ${
+              className={`rounded-[var(--radius-pill)] px-3 py-1.5 font-mono text-[11px] transition-colors ${
                 active
-                  ? "text-bone underline decoration-rule-bright underline-offset-[6px]"
-                  : "text-muted hover:text-bone"
+                  ? "bg-ink-3 text-bone"
+                  : "text-muted hover:bg-ink-2 hover:text-bone"
               }`}
             >
               {link.label}

@@ -116,7 +116,7 @@ export default function StudioPage() {
             key={panel}
             type="button"
             onClick={() => setMobilePanel(panel)}
-            className={`flex-1  px-3 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+            className={`flex-1 rounded-[var(--radius-pill)] px-3 py-2 font-mono text-[10px] uppercase tracking-wider transition-colors ${
               mobilePanel === panel ? "bg-bone text-ink" : "text-bone/45"
             }`}
           >
