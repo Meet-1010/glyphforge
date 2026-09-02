@@ -285,10 +285,17 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   }
 
   if (transparent) {
-    // Coverage drives alpha so the host page background shows through between
+    // Coverage alone drives alpha so the host page shows through between
     // characters. Scanline/vignette dim alpha too, otherwise they read as grey
     // smears over a light page instead of as dimming.
-    float alpha = clamp(max(coverage, glow) * shade, 0.0, 1.0);
+    //
+    // Glow deliberately does NOT contribute to alpha. Letting it do so meant
+    // the pointer light manufactured opacity in empty cells, and since the
+    // pointer defaults to the bottom-left corner until someone actually hovers,
+    // any preset with mouse glow filled the whole canvas with a flat wash of
+    // its tint. Glow brightens glyphs that are already there; it does not
+    // create them.
+    float alpha = clamp(coverage * shade, 0.0, 1.0);
     outputColor = vec4(glyphColor + glow, alpha);
   } else {
     vec3 composited = mix(backgroundColor, glyphColor, coverage) + glow;

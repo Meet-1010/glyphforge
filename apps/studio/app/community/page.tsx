@@ -175,7 +175,7 @@ function CreationCard({ creation, onDelete }: { creation: Creation; onDelete?: (
         </div>
 
         {!portable && (
-          <p className="font-mono text-[10px] leading-relaxed text-amber/70">
+          <p className="font-mono text-[10px] leading-relaxed text-bone-dim">
             Built from an uploaded file, so it can&apos;t be reopened or shared — that file only
             existed in the tab that made it.
           </p>

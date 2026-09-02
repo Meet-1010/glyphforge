@@ -59,11 +59,11 @@ const blob = await exportModel(geometry) // a real .glb
 
 ## Presets
 
-`terminal` · `matrix` · `amber` · `blueprint` · `brutalist` · `glitch` · `chromatic` · `paper`
+`terminal` · `matrix` · `blueprint` · `brutalist` · `glitch` · `chromatic` · `paper`
 
 ```tsx
-<GlyphHero preset="amber" />                  // start from a preset
-<GlyphHero preset="amber" cellSize={12} />    // override anything
+<GlyphHero preset="matrix" />                 // start from a preset
+<GlyphHero preset="matrix" cellSize={12} />   // override anything
 ```
 
 Build one interactively in **[the Studio](https://github.com/Meet-1010/glyphforge#studio)** and copy the generated component out.

@@ -31,24 +31,6 @@ export const PRESETS = {
       noiseSpeed: 6,
     },
   },
-  /** Warm amber monitor, soft glow, gentle flicker. */
-  amber: {
-    characterSet: "classic",
-    cellSize: 9,
-    invert: true,
-    color: true,
-    volumeShading: true,
-    tint: "#FFB53B",
-    postfx: {
-      contrastAdjust: 1.7,
-      scanlineIntensity: 0.2,
-      vignetteIntensity: 0.45,
-      mouseGlowEnabled: true,
-      mouseGlowRadius: 240,
-      mouseGlowIntensity: 0.35,
-      targetFPS: 24,
-    },
-  },
   /** Cyan on near-black, wireframe-adjacent, very legible. */
   blueprint: {
     characterSet: "dots",

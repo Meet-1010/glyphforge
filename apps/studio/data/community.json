@@ -5,13 +5,21 @@
     "author": "Glyphforge",
     "createdAt": "2026-08-30",
     "config": {
-      "model": { "type": "shape", "shape": "torusKnot", "detail": 200, "distortion": 0.45 },
+      "model": {
+        "type": "shape",
+        "shape": "torusKnot",
+        "detail": 200,
+        "distortion": 0.45
+      },
       "preset": "terminal",
       "cellSize": 8,
       "tint": "#917AFF",
       "useTint": true,
       "characterSet": "terminal",
-      "postfx": { "contrastAdjust": 1.9, "vignetteIntensity": 0.45 }
+      "postfx": {
+        "contrastAdjust": 1.9,
+        "vignetteIntensity": 0.45
+      }
     }
   },
   {
@@ -20,7 +28,12 @@
     "author": "Glyphforge",
     "createdAt": "2026-08-30",
     "config": {
-      "model": { "type": "shape", "shape": "helix", "detail": 200, "distortion": 0.5 },
+      "model": {
+        "type": "shape",
+        "shape": "helix",
+        "detail": 200,
+        "distortion": 0.5
+      },
       "preset": "matrix",
       "cellSize": 9,
       "tint": "#3BFF7A",
@@ -53,26 +66,8 @@
       "tint": "#FFFFFF",
       "useTint": true,
       "characterSet": "blocks",
-      "postfx": { "contrastAdjust": 2.1 }
-    }
-  },
-  {
-    "id": "featured-amber-gear",
-    "title": "Workshop",
-    "author": "Glyphforge",
-    "createdAt": "2026-08-30",
-    "config": {
-      "model": { "type": "shape", "shape": "gear", "detail": 160, "distortion": 0.55 },
-      "preset": "amber",
-      "cellSize": 9,
-      "tint": "#FFB53B",
-      "useTint": true,
-      "characterSet": "classic",
       "postfx": {
-        "contrastAdjust": 1.7,
-        "scanlineIntensity": 0.2,
-        "vignetteIntensity": 0.45,
-        "targetFPS": 24
+        "contrastAdjust": 2.1
       }
     }
   },
@@ -82,7 +77,13 @@
     "author": "Glyphforge",
     "createdAt": "2026-08-30",
     "config": {
-      "model": { "type": "shape", "shape": "crystal", "detail": 128, "distortion": 0.62, "seed": 7 },
+      "model": {
+        "type": "shape",
+        "shape": "crystal",
+        "detail": 128,
+        "distortion": 0.62,
+        "seed": 7
+      },
       "preset": "blueprint",
       "cellSize": 7,
       "tint": "#5AC8FA",
@@ -90,7 +91,10 @@
       "characterSet": "dots",
       "volumeShading": false,
       "backgroundColor": "#05080F",
-      "postfx": { "contrastAdjust": 1.5, "vignetteIntensity": 0.35 }
+      "postfx": {
+        "contrastAdjust": 1.5,
+        "vignetteIntensity": 0.35
+      }
     }
   },
   {
@@ -99,7 +103,13 @@
     "author": "Glyphforge",
     "createdAt": "2026-08-30",
     "config": {
-      "model": { "type": "shape", "shape": "blob", "detail": 128, "distortion": 0.5, "seed": 23 },
+      "model": {
+        "type": "shape",
+        "shape": "blob",
+        "detail": 128,
+        "distortion": 0.5,
+        "seed": 23
+      },
       "preset": "glitch",
       "cellSize": 9,
       "tint": "#FF4D6D",
@@ -134,7 +144,9 @@
       "useTint": true,
       "characterSet": "classic",
       "backgroundColor": "#F5F3EE",
-      "postfx": { "contrastAdjust": 1.6 }
+      "postfx": {
+        "contrastAdjust": 1.6
+      }
     }
   },
   {
@@ -143,13 +155,25 @@
     "author": "Glyphforge",
     "createdAt": "2026-08-30",
     "config": {
-      "model": { "type": "shape", "shape": "capsule", "detail": 160, "distortion": 0.3 },
+      "model": {
+        "type": "shape",
+        "shape": "capsule",
+        "detail": 160,
+        "distortion": 0.3
+      },
       "preset": "chromatic",
       "cellSize": 8,
       "useTint": false,
       "characterSet": "shades",
-      "material": { "color": "#5AC8FA", "roughness": 0.08, "metalness": 0.2 },
-      "postfx": { "contrastAdjust": 1.6, "vignetteIntensity": 0.3 }
+      "material": {
+        "color": "#5AC8FA",
+        "roughness": 0.08,
+        "metalness": 0.2
+      },
+      "postfx": {
+        "contrastAdjust": 1.6,
+        "vignetteIntensity": 0.3
+      }
     }
   }
 ]

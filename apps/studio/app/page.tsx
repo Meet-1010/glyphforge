@@ -35,13 +35,18 @@ const SOURCES = [
     title: "Image",
     body: "Drop a PNG. Flat maps its tones, relief pushes bright areas forward, extrude traces the silhouette.",
     model: { type: "shape", shape: "gear", distortion: 0.6 } as const,
-    preset: "amber" as const,
+    preset: "chromatic" as const,
   },
   {
     n: "04",
     title: "SVG",
     body: "Filled paths become extruded 3D with counters resolved as real holes. Paste markup or pick a file.",
-    model: { type: "shape", shape: "torusKnot", distortion: 0.4 } as const,
+    model: {
+      type: "svg",
+      markup:
+        '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 5 L61 39 L97 39 L68 60 L79 95 L50 74 L21 95 L32 60 L3 39 L39 39 Z" fill="black"/></svg>',
+      depth: 0.3,
+    } as const,
     preset: "glitch" as const,
   },
 ]
@@ -156,12 +161,12 @@ export default function LandingPage() {
         <div className="mt-10 grid border-l border-t border-rule sm:grid-cols-2 lg:grid-cols-4">
           {SOURCES.map((source) => (
             <article key={source.title} className="border-b border-r border-rule">
-              <div className="h-40 border-b border-rule">
+              <div className="h-52 border-b border-rule">
                 <GlyphCanvas
                   model={source.model}
                   preset={source.preset}
-                  cellSize={7}
-                  maxDpr={1.25}
+                  cellSize={5}
+                  maxDpr={1.5}
                   transparent
                   motion={{ autoRotate: 0.35, draggable: false }}
                   style={{ minHeight: 0, height: "100%" }}

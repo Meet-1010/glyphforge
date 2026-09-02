@@ -29,7 +29,6 @@ const PALETTES = [
 const PRESET_BLURBS: Record<PresetName, string> = {
   terminal: "Violet terminal glyphs, punchy contrast",
   matrix: "Katakana rain on a curved green CRT",
-  amber: "Warm amber monitor with a soft glow",
   blueprint: "Cyan dots on near-black, very legible",
   brutalist: "Solid blocks, reads like a low-res render",
   glitch: "Broken signal — tearing, jitter, RGB split",

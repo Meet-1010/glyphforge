@@ -165,7 +165,7 @@ export default function AssetsPage() {
         {outcome?.failed.map((failure) => (
           <p
             key={failure.provider}
-            className="mb-4 border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] text-amber/80"
+            className="mb-4 border border-rule-bright bg-ink-3 px-3 py-2 font-mono text-[10px] text-bone-dim"
           >
             {PROVIDERS.find((p) => p.id === failure.provider)?.label} is unreachable:{" "}
             {failure.message}

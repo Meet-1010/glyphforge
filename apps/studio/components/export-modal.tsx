@@ -242,7 +242,7 @@ function Step({
 
 function Warning({ children }: { children: React.ReactNode }) {
   return (
-    <p className="border border-amber/25 bg-amber/5 px-3 py-2 font-mono text-[10px] leading-relaxed text-amber/80">
+    <p className="border border-rule-bright bg-ink-3 px-3 py-2 font-mono text-[10px] leading-relaxed text-bone-dim">
       {children}
     </p>
   )
