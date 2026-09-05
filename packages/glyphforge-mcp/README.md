@@ -77,7 +77,7 @@ Licences are reported exactly as each catalogue states them and are never inferr
 | Tool | What it does |
 | --- | --- |
 | `glyphforge_get_started` | Learn the library — start here |
-| `glyphforge_get_docs` | Documentation by topic (19 topics) |
+| `glyphforge_get_docs` | Documentation by topic (20 topics) |
 | `glyphforge_list_presets` | The seven looks and their exact prop values |
 | `glyphforge_recommend_setup` | Pick a preset, model and layout for a described site |
 | `glyphforge_inspect_project` | Read a project on disk and recommend from what's there |
