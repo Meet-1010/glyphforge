@@ -32,7 +32,10 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "src",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "build": "tsc && node scripts/bundle-index.mjs && chmod +x dist/index.js",

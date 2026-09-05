@@ -118,4 +118,4 @@ The server shares its brains with the website: asset search lives in `glyphforge
 
 ## Licence
 
-MIT — see [LICENSE](../../LICENSE) and [NOTICE](../../NOTICE).
+MIT — see [LICENSE](./LICENSE) and [NOTICE](./NOTICE).

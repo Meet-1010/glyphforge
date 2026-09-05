@@ -1,0 +1,22 @@
+Glyphforge
+Copyright (c) 2026 Meet Chauhan
+
+This product includes software derived from webgl-ascii-hero:
+
+    webgl-ascii-hero
+    https://github.com/egorshest/webgl-ascii-hero
+    Copyright (c) 2025 egorshest
+    Licensed under the MIT License.
+
+Specifically, the GLSL ASCII post-processing fragment shader in
+packages/glyphforge/src/effects/ascii-shader.ts and the glyph-atlas
+approach in packages/glyphforge/src/effects/glyph-atlas.ts originate
+from that project and have been modified. The MIT license text above
+(see LICENSE) applies to both the original and the modifications.
+
+Third-party runtime dependencies retain their own licenses:
+  three                     — MIT
+  @react-three/fiber        — MIT
+  @react-three/drei         — MIT
+  @react-three/postprocessing — MIT
+  postprocessing            — Zlib
