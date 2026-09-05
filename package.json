@@ -16,6 +16,7 @@
     "studio": "npm run dev --workspace=@glyphforge/studio",
     "mcp": "npm run build:all && node packages/glyphforge-mcp/dist/index.js",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "build:static": "npm run build:static --workspace=@glyphforge/studio"
   },
