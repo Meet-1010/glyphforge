@@ -256,6 +256,11 @@ export default function LandingPage() {
               command: "npx glyphforge init --yes",
             },
             {
+              title: "Let your agent wire it up",
+              body: "Claude Code, Cursor or Codex reads your project and picks a hero to match.",
+              command: "claude mcp add glyphforge -- npx -y glyphforge-mcp",
+            },
+            {
               title: "Own the source",
               body: "Copies the real source into your repo. No runtime dependency, edit anything.",
               command: "npx glyphforge add hero",
