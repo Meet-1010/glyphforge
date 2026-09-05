@@ -1,0 +1,57 @@
+{
+  "name": "glyphforge-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Glyphforge — teaches a coding agent the library, recommends a hero that suits the site it is looking at, and finds the 3D model to put in it.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "glyphforge",
+    "ascii",
+    "webgl",
+    "three",
+    "claude",
+    "cursor",
+    "codex",
+    "agent"
+  ],
+  "license": "MIT",
+  "author": "Meet Chauhan",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Meet-1010/glyphforge.git",
+    "directory": "packages/glyphforge-mcp"
+  },
+  "homepage": "https://github.com/Meet-1010/glyphforge/tree/main/packages/glyphforge-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Meet-1010/glyphforge/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "glyphforge-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc && node scripts/bundle-index.mjs && chmod +x dist/index.js",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "glyphforge": "^0.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

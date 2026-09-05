@@ -26,14 +26,16 @@ Glyphforge removes that step in two ways:
 ## Repository layout
 
 ```
-packages/glyphforge/   The npm package — components, ASCII shader, model forge, CLI
-apps/studio/           The site — landing, Studio, asset search, community
+packages/glyphforge/       The npm package — components, ASCII shader, model forge, CLI
+packages/glyphforge-mcp/   The MCP server — the same brains, for coding agents
+apps/studio/               The site — landing, Studio, asset search, community
 ```
 
 | | |
 | --- | --- |
 | **Library** | React components, the GLSL ASCII pass, five model generators, glTF export |
 | **CLI** | `npx glyphforge init` to scaffold, `npx glyphforge add` to eject the source |
+| **MCP server** | `npx glyphforge-mcp` — teaches an agent the library, recommends a hero for the site it is looking at, finds the model |
 | **`/studio`** | Forge a model, tune the look live, copy the component or download the `.glb` |
 | **`/assets`** | Search open 3D catalogues and send a model straight into the Studio |
 | **`/community`** | Live gallery of creations, each one a running scene rather than a screenshot |
@@ -69,7 +71,7 @@ repeatedly left the dev server serving a broken module graph.
 ## What the Studio does
 
 - **Source** — text, parametric shape, image (flat, relief, or silhouette extrude), SVG, or an uploaded `.glb`
-- **Look** — eight presets, eight glyph ramps, cell size, tint, dithering, transparency, and the full post-fx stack live
+- **Look** — seven presets, eight glyph ramps, cell size, tint, dithering, transparency, and the full post-fx stack live
 - **Viewport** — scroll or pinch to zoom, shift-drag to pan, drag to rotate, double-click to reset
 - **Export** — copy a paste-ready component, copy the install command, download the model as `.glb`, or share a link that encodes the whole config
 
@@ -77,9 +79,15 @@ Uploads never leave the browser. The share link carries the config in the URL; t
 
 ## Asset search
 
-`/assets` searches two open catalogues — Poly Haven (521 CC0 models) and the
-Khronos glTF sample assets (119 single-file `.glb`) — and imports straight into
-the Studio.
+`/assets` searches five open catalogues and imports straight into the Studio.
+
+| Catalogue | Size | Licence | Direct import |
+| --- | --- | --- | --- |
+| Objaverse | ~46,200 | Per model, mostly CC-BY | yes |
+| Poly Haven | 521 | CC0 | yes |
+| Khronos glTF samples | 119 | Varies per model | yes |
+| three.js examples | 24 | Per model | yes |
+| Sketchfab | millions | Per model | no — search only |
 
 Both the APIs and their file CDNs send `Access-Control-Allow-Origin: *`, so
 search and download both run in the browser with no proxy and no API key. Poly
@@ -87,8 +95,11 @@ Haven's multi-file glTF resolves its own `.bin` and textures because the whole
 directory is CORS-open. Nothing about a search reaches a Glyphforge server,
 because there isn't one.
 
-Licences are printed exactly as the source states them and never inferred. Poly
-Haven models are CC0; Khronos sample licences vary per model.
+Sketchfab is the one exception, deliberately: downloading needs an OAuth token
+tied to a real account, so rather than pretend, those results link out to the
+model page and you bring the `.glb` back yourself.
+
+Licences are printed exactly as the source states them and never inferred.
 
 ## Community
 
@@ -102,6 +113,31 @@ live in `localStorage` on that one browser, and submissions go through a
 pre-filled GitHub issue carrying a share link. Wiring a real backend later means
 replacing `apps/studio/lib/gallery.ts` — the page reads through it, not around
 it.
+
+---
+
+## For coding agents
+
+The MCP server puts everything above inside Claude Code, Cursor, Codex — anything
+that speaks [MCP](https://modelcontextprotocol.io):
+
+```bash
+claude mcp add glyphforge -- npx -y glyphforge-mcp
+```
+
+The agent can then learn the library, get a preset, model and layout recommended
+for the site it is actually looking at, read the project on disk to check peer
+dependencies and infer the palette, search all five model catalogues, and
+generate the component. Sketchfab results arrive as a link the user can click
+and download from, because that step needs an account.
+
+It shares its brains with this site rather than reimplementing them — asset
+search lives in `glyphforge/catalog` and component generation in
+`glyphforge/codegen`, both consumed by the Studio and the server, so the code an
+agent hands you is byte-identical to the code the Studio's copy button hands you.
+
+See [`packages/glyphforge-mcp`](./packages/glyphforge-mcp) for the tool list and
+per-client setup.
 
 ---
 
