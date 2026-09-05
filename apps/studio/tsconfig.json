@@ -31,6 +31,12 @@
       ],
       "glyphforge/forge": [
         "../../packages/glyphforge/src/forge/index.ts"
+      ],
+      "glyphforge/catalog": [
+        "../../packages/glyphforge/src/catalog/index.ts"
+      ],
+      "glyphforge/codegen": [
+        "../../packages/glyphforge/src/codegen/index.ts"
       ]
     }
   },

@@ -37,6 +37,8 @@ const nextConfig: NextConfig = {
     resolveAlias: {
       glyphforge: path.join(librarySrc, "index.ts"),
       "glyphforge/forge": path.join(librarySrc, "forge/index.ts"),
+      "glyphforge/catalog": path.join(librarySrc, "catalog/index.ts"),
+      "glyphforge/codegen": path.join(librarySrc, "codegen/index.ts"),
     },
   },
   webpack: (config) => {
@@ -44,6 +46,8 @@ const nextConfig: NextConfig = {
       ...config.resolve.alias,
       glyphforge$: path.join(librarySrc, "index.ts"),
       "glyphforge/forge$": path.join(librarySrc, "forge/index.ts"),
+      "glyphforge/catalog$": path.join(librarySrc, "catalog/index.ts"),
+      "glyphforge/codegen$": path.join(librarySrc, "codegen/index.ts"),
     }
     return config
   },

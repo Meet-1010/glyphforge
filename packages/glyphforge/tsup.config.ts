@@ -2,7 +2,13 @@ import { defineConfig } from "tsup"
 
 export default defineConfig([
   {
-    entry: { index: "src/index.ts", forge: "src/forge/index.ts" },
+    entry: {
+      index: "src/index.ts",
+      forge: "src/forge/index.ts",
+      catalog: "src/catalog/index.ts",
+      presets: "src/presets.ts",
+      codegen: "src/codegen/index.ts",
+    },
     format: ["esm", "cjs"],
     dts: true,
     clean: true,
