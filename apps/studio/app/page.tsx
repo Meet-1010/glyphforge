@@ -266,19 +266,31 @@ export default function LandingPage() {
               command: "npx glyphforge add hero",
             },
           ].map((step) => (
-            <div key={step.title} className="grid gap-4 border-b border-rule py-6 lg:grid-cols-[1fr_1.4fr]">
+            <div key={step.title} className="grid gap-4 border-b border-rule py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
               <div>
                 <h3 className="font-mono text-[12px] text-bone">{step.title}</h3>
                 <p className="mt-1.5 font-mono text-[11px] text-muted">{step.body}</p>
               </div>
-              <div className="flex items-start gap-2">
-                <code className="w-full overflow-x-auto whitespace-nowrap rounded-[var(--radius-sm)] border border-rule bg-ink-2 px-3 py-2.5 font-mono text-[11px] text-bone-dim">
+              <div className="flex min-w-0 items-start gap-2">
+                <code className="w-full min-w-0 overflow-x-auto whitespace-nowrap rounded-[var(--radius-sm)] border border-rule bg-ink-2 px-3 py-2.5 font-mono text-[11px] text-bone-dim">
                   {step.command}
                 </code>
                 <CopyButton text={step.command} />
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-5">
+          <p className="font-mono text-[11px] text-muted">
+            Peer versions, framework notes and the fixes for the usual first-run problems.
+          </p>
+          <Link
+            href="/setup"
+            className="rounded-[var(--radius-pill)] border border-rule-bright px-5 py-3 font-mono text-[12px] text-bone transition-colors hover:border-bone"
+          >
+            Read the setup guide
+          </Link>
         </div>
       </Section>
 
