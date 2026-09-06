@@ -32,7 +32,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "glyphforge": "./dist/cli.cjs"
+    "glyphforge": "dist/cli.cjs"
   },
   "exports": {
     ".": {

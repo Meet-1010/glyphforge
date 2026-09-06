@@ -28,7 +28,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "glyphforge-mcp": "./dist/index.js"
+    "glyphforge-mcp": "dist/index.js"
   },
   "files": [
     "dist",
