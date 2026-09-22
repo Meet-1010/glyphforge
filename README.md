@@ -1,5 +1,8 @@
 # Glyphforge
 
+
+![Glyphforge Demo](glyphforge-demo.gif)
+
 **ASCII hero sections you can drop into any React app — and a browser-based forge so you don't need a 3D model to start.**
 
 ```tsx
