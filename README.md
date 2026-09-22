@@ -1,7 +1,7 @@
 # Glyphforge
 
 
-![Glyphforge Demo](glyphforge-demo.gif)
+<video src="glyphforge-demo.mp4" autoplay loop muted playsinline width="100%"></video>
 
 **ASCII hero sections you can drop into any React app — and a browser-based forge so you don't need a 3D model to start.**
 
