@@ -1,11 +1,7 @@
 # Glyphforge
 
 
-<a href="https://github.com/Meet-1010/glyphforge/raw/main/glyphforge-demo.mp4">
-  <img src="glyphforge-poster.jpg" alt="Glyphforge Demo" width="100%">
-</a>
-
-> *Click the image to watch the launch video*
+https://github.com/user-attachments/assets/1b07be75-471c-43b5-84d1-9589e6e26799
 
 **ASCII hero sections you can drop into any React app — and a browser-based forge so you don't need a 3D model to start.**
 
