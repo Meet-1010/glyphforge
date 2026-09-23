@@ -1,7 +1,7 @@
 # Glyphforge
 
 
-https://github.com/user-attachments/assets/1b07be75-471c-43b5-84d1-9589e6e26799
+https://github.com/user-attachments/assets/3b075794-89a7-4fcb-84dc-f160ac6b59b9
 
 **ASCII hero sections you can drop into any React app — and a browser-based forge so you don't need a 3D model to start.**
 
